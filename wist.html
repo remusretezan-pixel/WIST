@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e2a1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>WIST</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --felt:#0e2a1c; --felt-2:#123524; --felt-3:#1a4530;
+    --card:#f6f1e3; --card-2:#efe7d2; --ink:#211d16; --ink-2:#6b6250;
+    --red:#b8352c; --gold:#d4a537; --green-ok:#2c7a4b;
+    --radius:14px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--felt);
+    background-image: radial-gradient(ellipse at 50% -10%, #1c4d34 0%, var(--felt) 62%);
+    color:var(--card);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height:100dvh;
+    padding-bottom: calc(76px + var(--safe-b));
+  }
+  h1,h2,.display{font-family:"Fraunces", Georgia, serif;}
+
+  /* ===== Header ===== */
+  header{
+    padding:14px 16px 10px; display:flex; align-items:baseline; justify-content:space-between;
+    position:relative; z-index:20;
+  }
+  header #btn-home, header #hdr-info .mini{pointer-events:auto;}
+  header h1{margin:0; font-size:26px; font-weight:800; letter-spacing:.14em; color:var(--card);}
+  header h1 .suit{color:var(--gold); letter-spacing:0;}
+  #hdr-sub{font-size:12px; color:#9fbfa9;}
+  .hdr-left{display:flex; flex-direction:column; gap:3px;}
+  #hdr-info{display:flex; align-items:center; gap:8px; font-size:12px; color:#9fbfa9;}
+  #hdr-info:empty{display:none;}
+  #hdr-info .rnd{font-weight:800; color:#dbe8df;}
+  #hdr-info .dot{opacity:.5;}
+  #hdr-info .mini{
+    background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.14); color:#dbe8df;
+    border-radius:8px; font-size:14px; line-height:1; padding:3px 7px;
+  }
+  #hdr-info .mini:active{transform:translateY(1px);}
+
+  /* ===== Round track (signature) ===== */
+  #track{display:flex; gap:4px; overflow-x:auto; padding:2px 16px 10px; scrollbar-width:none;}
+  #track::-webkit-scrollbar{display:none;}
+  .tick{
+    flex:0 0 auto; min-width:26px; height:30px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#7fa28c; background:var(--felt-2);
+    border:1px solid #24503a;
+  }
+  .tick.done{background:var(--felt-3); color:#c9dccf;}
+  .tick.now{background:var(--gold); color:var(--ink); border-color:var(--gold); transform:scale(1.12);}
+
+  /* ===== Screens ===== */
+  .screen{display:none; padding:4px 14px 14px;}
+  .screen.on{display:block;}
+  .panel{
+    background:var(--card); color:var(--ink); border-radius:var(--radius);
+    padding:16px; margin:0 0 12px; box-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  .panel h2{margin:0 0 4px; font-size:20px; font-weight:800;}
+  .muted{color:var(--ink-2); font-size:13px;}
+  .muted-l{color:#9fbfa9; font-size:13px;}
+
+  /* ===== Buttons ===== */
+  button{font:inherit; cursor:pointer;}
+  .btn{
+    display:block; width:100%; padding:15px; border:none; border-radius:12px;
+    background:var(--red); color:#fff; font-size:17px; font-weight:700;
+    box-shadow:0 3px 0 #7e211b;
+  }
+  .btn:disabled{background:#c9c1ae; color:#8b8471; box-shadow:none;}
+  .btn.ghost{background:transparent; color:var(--red); box-shadow:none; border:2px solid var(--red); padding:13px;}
+  .btn.small{width:auto; display:inline-block; padding:9px 14px; font-size:14px;}
+  .btn:active:not(:disabled){transform:translateY(2px); box-shadow:0 1px 0 #7e211b;}
+
+  /* ===== Setup ===== */
+  .seg{display:flex; gap:8px; margin:10px 0 16px;}
+  .seg button{
+    flex:1; padding:13px 0; border-radius:10px; border:2px solid #d8cfb8;
+    background:var(--card-2); color:var(--ink); font-size:17px; font-weight:700;
+  }
+  .seg button.sel{background:var(--ink); color:var(--card); border-color:var(--ink);}
+  .name-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .name-row .idx{
+    width:30px; height:30px; border-radius:50%; background:var(--felt-2); color:var(--card);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:0 0 auto;
+  }
+  .name-row input{
+    flex:1; padding:12px; border-radius:10px; border:2px solid #d8cfb8; background:#fff;
+    font-size:16px; color:var(--ink); min-width:0;
+  }
+  .name-row input:focus{outline:none; border-color:var(--gold);}
+  select{
+    width:100%; padding:12px; border-radius:10px; border:2px solid #d8cfb8;
+    background:#fff; font-size:16px; color:var(--ink); margin:6px 0 16px;
+  }
+  label.fld{font-size:13px; font-weight:700; color:var(--ink-2); text-transform:uppercase; letter-spacing:.05em;}
+
+  /* ===== Round entry ===== */
+  .phase-pill{
+    display:inline-block; padding:4px 12px; border-radius:99px; font-size:12px; font-weight:800;
+    letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px;
+  }
+  .phase-pill.bids{background:#e8ddbe; color:#7a5d10;}
+  .phase-pill.tricks{background:#d5e6da; color:#1e5c3a;}
+  .p-block{padding:12px 0; border-top:1.5px dashed #d8cfb8;}
+  .p-block:first-of-type{border-top:none;}
+  .p-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;}
+  .p-name{font-weight:800; font-size:17px;}
+  .p-tag{font-size:11px; font-weight:800; color:#fff; background:var(--felt-3); border-radius:6px; padding:3px 8px; letter-spacing:.05em;}
+  .p-tag.dealer{background:var(--gold); color:var(--ink);}
+  .p-bidinfo{font-size:13px; color:var(--ink-2);}
+  .chips{display:flex; gap:6px; flex-wrap:wrap;}
+  .chip{
+    width:42px; height:44px; border-radius:10px; border:2px solid #cfc5aa;
+    background:#fff; color:var(--ink); font-size:18px; font-weight:700;
+  }
+  .chip.sel{background:var(--ink); color:var(--card); border-color:var(--ink);}
+  .chip:disabled{background:var(--card-2); color:#c0b69c; border-color:#e2dac4; text-decoration:line-through;}
+  .sum-bar{
+    margin-top:12px; padding:10px 12px; border-radius:10px; background:var(--card-2);
+    display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:700;
+  }
+  .sum-bar .val{font-size:17px;}
+  .sum-bar.ok{background:#d5e6da; color:#1e5c3a;}
+  .sum-bar.bad{background:#f2d3ce; color:#8c261e;}
+  .actions{display:flex; gap:10px; margin-top:12px;}
+  .actions .btn{margin:0;}
+
+  /* ===== Score table ===== */
+  .tbl-wrap{overflow-x:auto; border-radius:var(--radius); background:var(--card); box-shadow:0 3px 0 rgba(0,0,0,.25);}
+  table{border-collapse:collapse; width:100%; color:var(--ink); font-size:13px; min-width:100%;}
+  th,td{padding:7px 6px; text-align:center; border-bottom:1px solid #e6ddc6; white-space:nowrap;}
+  thead th{
+    position:sticky; top:0; background:var(--ink); color:var(--card); font-size:12px; z-index:1;
+  }
+  thead tr.names th{font-family:"Fraunces",serif; font-size:14px; background:var(--felt-2);}
+  td.rnd{font-weight:800; background:var(--card-2);}
+  td.neg{color:var(--red); font-weight:700;}
+  td.pos{color:var(--green-ok); font-weight:700;}
+  tr.editable{cursor:pointer;}
+  tr.cur td{background:#f4e9c9;}
+  tfoot td{font-weight:800; background:var(--card-2); border-top:2px solid var(--ink); font-size:14px;}
+  .deal-dot{color:var(--gold); font-size:10px; vertical-align:middle;}
+
+  /* ===== Standings ===== */
+  .stand{display:flex; align-items:center; gap:12px; padding:13px 0; border-top:1.5px dashed #d8cfb8;}
+  .stand:first-of-type{border-top:none;}
+  .stand .pos-n{
+    font-family:"Fraunces",serif; font-size:24px; font-weight:800; width:34px; text-align:center; color:var(--ink-2);
+  }
+  .stand.first .pos-n{color:var(--gold);}
+  .stand .nm{flex:1; font-weight:800; font-size:17px;}
+  .stand .sc{font-family:"Fraunces",serif; font-size:22px; font-weight:800;}
+  .stand .sc.neg{color:var(--red);}
+  #chart-panel svg{width:100%; height:auto; display:block;}
+
+  /* ===== Bottom nav ===== */
+  nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    display:flex; background:#0a2015; border-top:1px solid #24503a;
+    padding:6px 8px calc(6px + var(--safe-b));
+  }
+  nav button{
+    flex:1; background:none; border:none; color:#7fa28c; font-size:12px; font-weight:700;
+    padding:8px 0 6px; border-radius:10px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  nav button .ic{font-size:20px; line-height:1;}
+  nav button.on{color:var(--gold);}
+
+  .banner{
+    background:var(--felt-3); border:1px solid #2c6a48; color:#d9e9dd;
+    border-radius:12px; padding:12px 14px; font-size:14px; margin-bottom:12px;
+  }
+  .winner-panel{text-align:center;}
+  .winner-panel .trophy{font-size:44px;}
+  .winner-panel h2{font-size:24px;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important;} }
+
+  /* =========================================================
+     JOC vs AI — teme, masă, cărți   (adăugat iulie 2026)
+     ========================================================= */
+  body[data-masa="verde"]  {--felt:#0e2a1c; --felt-2:#123524; --felt-3:#1a4530; --glow:#1c4d34;}
+  body[data-masa="albastru"]{--felt:#0d1c33; --felt-2:#122744; --felt-3:#1b3a63; --glow:#183a68;}
+  body[data-masa="bordo"]  {--felt:#2a0f13; --felt-2:#3a161b; --felt-3:#512028; --glow:#4d1a22;}
+  body[data-masa="lemn"]   {--felt:#2b1d10; --felt-2:#3a2716; --felt-3:#523720; --glow:#4a3018;}
+  body{background-image: radial-gradient(ellipse at 50% -10%, var(--glow) 0%, var(--felt) 62%);}
+
+  /* ---------- ecran acasă ---------- */
+  .home-card{
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    background:var(--card); color:var(--ink); border:none; border-radius:var(--radius);
+    padding:18px 16px; margin-bottom:12px; box-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  .home-card:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .home-card .ic{font-size:34px; line-height:1; flex:0 0 auto;}
+  .home-card .tt{font-family:"Fraunces",serif; font-size:19px; font-weight:800; display:block;}
+  .home-card .ds{font-size:13px; color:var(--ink-2); display:block; margin-top:2px;}
+  .home-card .badge{
+    margin-left:auto; flex:0 0 auto; background:var(--gold); color:var(--ink);
+    font-size:11px; font-weight:800; border-radius:99px; padding:4px 9px;
+  }
+  #btn-home{
+    background:none; border:1.5px solid #2c6a48; color:#9fbfa9; border-radius:9px;
+    font-size:13px; font-weight:700; padding:6px 11px;
+  }
+
+  /* ---------- setup joc: un singur ecran ---------- */
+  #scr-jsetup .panel{margin-bottom:12px;}
+  #scr-jsetup .panel h2{margin-bottom:8px;}
+
+  /* fiecare jucător pe un singur rând: avatar · nume · nivel · tipologie */
+  .slot{
+    display:grid; grid-template-columns:40px minmax(0,1fr) 88px 100px; gap:6px; align-items:center;
+    padding:7px 0;
+  }
+  .slot-err{background:rgba(192,57,43,.07); border-radius:10px; padding:10px 6px; margin:0 -6px;}
+  .slot input{
+    padding:11px; border-radius:10px; border:2px solid #d8cfb8; background:#fff;
+    font-size:16px; color:var(--ink); min-width:0;
+  }
+  .slot input:focus{outline:none; border-color:var(--gold);}
+  .opt-sel{
+    width:100%; padding:10px 6px; border-radius:9px; border:2px solid #d8cfb8;
+    background:var(--card-2); font-size:13px; font-weight:700; color:var(--ink); min-width:0;
+  }
+  .opt-sel.ph{color:#a89a78; border-color:#e0d8c2;}
+  .slot-err .opt-sel.ph{border-color:#c0392b;}
+  .opt-empty{display:block;}
+  .av-grid{grid-column:1/-1;}
+  .setup-err{
+    margin-top:12px; padding:11px 13px; border-radius:10px; font-size:14px; font-weight:600;
+    background:rgba(192,57,43,.12); border:1px solid rgba(192,57,43,.4); color:#8c2820;
+  }
+  .start-row{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
+  .start-row select{flex:1 1 100%; margin:0;}
+  .start-row .btn{flex:1 1 0; width:auto; margin:0; padding-left:18px; padding-right:18px;}
+
+  .av-btn{
+    width:40px; height:40px; border-radius:11px; border:2px solid #d8cfb8; background:var(--card-2);
+    font-size:22px; line-height:1; flex:0 0 auto; padding:0;
+  }
+  .av-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:2px 0 10px;}
+  .av-grid button{
+    aspect-ratio:1; border-radius:10px; border:2px solid #e2dac4; background:#fff; font-size:21px; padding:0;
+  }
+  .av-grid button.sel{border-color:var(--ink); background:var(--card-2);}
+  .opt-row{display:flex; gap:6px; margin-top:7px;}
+  .opt-row button{
+    flex:1; padding:9px 2px; border-radius:9px; border:2px solid #d8cfb8;
+    background:var(--card-2); color:var(--ink); font-size:13px; font-weight:700;
+  }
+  .opt-row button.sel{background:var(--ink); color:var(--card); border-color:var(--ink);}
+  .opt-lbl{font-size:11px; font-weight:800; color:var(--ink-2); text-transform:uppercase;
+           letter-spacing:.05em; margin-top:0; display:block;}
+  .masa-grid{display:grid; grid-template-columns:1fr; gap:10px 14px; align-items:start;}
+  .theme-row{display:flex; gap:8px; margin-top:7px;}
+  .sw{width:100%; aspect-ratio:1.5; border-radius:10px; border:3px solid transparent; padding:0;}
+  .sw.sel{border-color:var(--gold);}
+
+  /* ---------- masa de joc ---------- */
+  #scr-play{padding:0; display:none;}
+  #scr-play.on{display:flex; flex-direction:column; height:100dvh;}
+  body.playing{padding-bottom:0; overflow:hidden;}
+
+  .op-strip{display:flex; gap:6px; padding:6px 8px 4px; flex:0 0 auto;}
+  .op{
+    flex:1; min-width:0; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.07);
+    border-radius:11px; padding:6px 4px; text-align:center;
+  }
+  .op.turn{border-color:var(--gold); background:rgba(212,165,55,.16);}
+  .op .av{font-size:20px; line-height:1.1;}
+  .op .nm{font-size:11px; font-weight:700; color:#cfe0d5; white-space:nowrap;
+          overflow:hidden; text-overflow:ellipsis;}
+  .op .bt{display:flex; justify-content:center; gap:4px; margin-top:3px;}
+  .pill{border-radius:7px; font-size:12px; font-weight:800; padding:1px 6px; min-width:26px;}
+  .pill.bid{background:var(--gold); color:#241c05;}
+  .pill.bid.none{background:rgba(255,255,255,.13); color:#8fa89a;}
+  .pill.tr{background:rgba(255,255,255,.14); color:#e6f0e9;}
+  .pill.tr.ok{background:#2c7a4b; color:#fff;}
+  .pill.tr.over{background:#b8352c; color:#fff;}
+  .op .left{font-size:10px; color:#7fa28c; margin-top:2px;}
+
+  .felt{
+    flex:1 1 auto; position:relative; display:grid; min-height:0;
+    grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr 1fr;
+    place-items:center; margin:2px 6px; border-radius:18px;
+    background:radial-gradient(ellipse at 50% 45%, var(--felt-3) 0%, var(--felt-2) 70%);
+    box-shadow:inset 0 0 34px rgba(0,0,0,.45);
+  }
+  .slot-n{grid-area:1/2/2/3;} .slot-w{grid-area:2/1/3/2;}
+  .slot-e{grid-area:2/3/3/4;} .slot-s{grid-area:3/2/4/3;}
+  .msg{
+    grid-area:2/2/3/3; text-align:center; font-size:12px; color:#a9c6b4;
+    max-width:96%; line-height:1.35;
+  }
+  .msg b{color:var(--gold);}
+
+  .hand-wrap{flex:0 0 auto; padding:4px 6px calc(6px + var(--safe-b)); overflow:visible;}
+  .hand{display:flex; justify-content:center; align-items:flex-end; min-height:84px;}
+
+  /* ---------- carte ---------- */
+  .k{
+    border-radius:7px; flex:0 0 auto; position:relative; user-select:none;
+    background:#fbf8f0; border:1px solid #cfc7b4;
+    box-shadow:0 2px 4px rgba(0,0,0,.45);
+    display:flex; flex-direction:column; justify-content:space-between; padding:3px 4px;
+    font-weight:800; line-height:1; color:#1c1a15;
+  }
+  .k.red{color:#c0392b;}
+  .k .rk{font-size:.9em;}
+  .k .sy{font-size:1.5em; text-align:center;}
+  .k .rk2{align-self:flex-end; transform:rotate(180deg); font-size:.9em;}
+  .k.atu{border:2px solid var(--gold); box-shadow:0 0 9px rgba(212,165,55,.6),0 2px 4px rgba(0,0,0,.45);}
+  .k.dead{opacity:.34;}
+  .k.win{box-shadow:0 0 0 2px var(--gold),0 0 16px rgba(212,165,55,.85);}
+  .k.back{border:1px solid rgba(0,0,0,.35);}
+  body[data-spate="romb"]  .k.back{background:repeating-linear-gradient(45deg,#8c1f1a 0 5px,#a82a23 5px 10px);}
+  body[data-spate="dungi"] .k.back{background:repeating-linear-gradient(90deg,#1a3a6a 0 4px,#28529b 4px 8px);}
+  body[data-spate="carbon"] .k.back{background:repeating-linear-gradient(45deg,#20242a 0 4px,#2e343d 4px 8px);}
+  body[data-spate="auriu"] .k.back{background:repeating-linear-gradient(45deg,#6b5310 0 5px,#8f7016 5px 10px);}
+
+  .fan{display:flex; align-items:center; justify-content:center;}
+  .fan .k{margin-left:-13px;}
+  .fan .k:first-child{margin-left:0;}
+  .cnt{
+    font-size:10px; color:#9fbfa9; background:rgba(0,0,0,.35);
+    border-radius:6px; padding:1px 5px; margin-left:5px;
+  }
+
+  /* ---------- panou licitație ---------- */
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:var(--card); color:var(--ink);
+    border-radius:16px 16px 0 0; padding:10px 14px calc(10px + var(--safe-b));
+    box-shadow:0 -6px 22px rgba(0,0,0,.55);
+  }
+  .sheet h3{margin:0 0 2px; font-family:"Fraunces",serif; font-size:17px;}
+  .sheet .sub{font-size:12px; color:var(--ink-2); margin-bottom:7px;}
+  .sheet .chips{justify-content:center; flex-wrap:wrap;}
+  .sheet .chip{width:42px; height:42px; font-size:18px;}
+
+  .overlay{
+    position:fixed; inset:0; z-index:40; background:rgba(4,12,7,.86);
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .overlay .panel{width:100%; max-width:420px; margin:0; max-height:86dvh; overflow:auto;}
+  .rt{width:100%; font-size:14px;}
+  .rt td,.rt th{padding:6px 4px;}
+  .rt .nm{text-align:left; font-weight:700;}
+
+  /* meniu în timpul jocului */
+  .menu-panel{max-width:460px;}
+  .menu-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .menu-head h2{margin:0;}
+  .menu-head .x{
+    background:var(--card-2); border:none; border-radius:9px; width:34px; height:34px;
+    font-size:15px; color:var(--ink); flex:0 0 auto;
+  }
+  .menu-panel select{margin:5px 0 4px;}
+  .menu-panel .opt-row{margin-top:5px;}
+  .menu-panel .opt-row button{padding:10px 2px;}
+  .menu-panel .theme-row{margin-top:5px;}
+  .rt.stat{font-size:13px;}
+  .rt.stat thead tr{background:var(--ink);}
+  .rt.stat th{font-size:10px; text-transform:uppercase; letter-spacing:.03em; color:#fff; padding:6px 3px;}
+  .rt.stat th:first-child{border-radius:8px 0 0 8px; padding-left:8px;}
+  .rt.stat th:last-child{border-radius:0 8px 8px 0;}
+  .rt.stat td{padding:6px 3px; text-align:center; border-top:1px solid #e6ddc7;}
+  .rt.stat td.nm{text-align:left; line-height:1.2;}
+  .rt.stat td.pos{color:#2c7a4b; font-weight:700;}
+  .rt.stat td.neg{color:#b8352c; font-weight:700;}
+
+  /* rândul viteză + sunet, unul lângă altul */
+  .menu-row2{display:flex; gap:14px; align-items:flex-end; margin-bottom:2px;}
+  .menu-row2 .mr-speed{flex:1 1 auto; min-width:0;}
+  .menu-row2 .mr-snd{flex:0 0 auto;}
+  .menu-row2 .opt-lbl{margin-top:0;}
+  .snd-toggle{
+    padding:11px 16px; border-radius:10px; border:2px solid #d8cfb8; background:var(--card-2);
+    color:var(--ink); font-size:14px; font-weight:700; white-space:nowrap;
+  }
+  .snd-toggle.on{background:var(--ink); color:var(--card); border-color:var(--ink);}
+  .menu-row2 .speed-row{margin-top:6px;}
+
+  /* subsolul meniului: două butoane pe un rând */
+  .menu-foot{display:flex; gap:10px; margin-top:14px;}
+  .menu-foot .btn{margin:0; flex:1 1 0;}
+  .menu-cont{background:#2c7a4b; box-shadow:0 3px 0 #1e5836;}
+  .menu-quit-btn{background:var(--card-2); color:#b8352c; border:2px solid #d9a9a3; box-shadow:0 3px 0 #cbb;}
+
+  /* dialog de confirmare, centrat peste meniu */
+  .confirm-overlay{
+    position:fixed; inset:0; z-index:50; background:rgba(4,12,7,.6);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .confirm-box{
+    background:var(--card); border-radius:16px; padding:20px 18px; width:100%; max-width:360px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .qc-msg{text-align:center; font-weight:700; font-size:16px; color:var(--ink); margin-bottom:14px;}
+  .qc-btns{display:flex; gap:10px;}
+  .qc-btns .btn{margin:0; flex:1 1 0;}
+  .qc-btns .menu-quit-btn{background:var(--red); color:#fff; border:none; box-shadow:0 3px 0 #7e211b;}
+
+  .speed-row{display:flex; align-items:center; gap:8px; font-size:11px; color:#7fa28c;}
+  .speed-row input{flex:1;}
+
+  /* ---------- PC / ecran lat ---------- */
+  @media (min-width:820px){
+    body{max-width:none;}
+    .op .nm{font-size:13px;}
+    .sheet .chips{flex-wrap:wrap; gap:6px;}
+    .sheet .chip{width:40px; height:40px; font-size:17px;}
+    /* caseta de licitație inline, la dreapta panoului de scor */
+    .bid-slot{flex:0 0 auto;}
+    .sheet.bid-inline{
+      position:static; box-shadow:0 2px 10px rgba(0,0,0,.4); border-radius:14px;
+      padding:10px 12px; max-width:320px; background:var(--card);
+    }
+    .sheet.bid-inline h3{font-size:16px; margin:0 0 2px;}
+    .sheet.bid-inline .sub{font-size:11px; margin-bottom:6px;}
+    .sheet.bid-inline .chips{justify-content:flex-start; max-width:280px;}
+    .sheet.bid-inline .chip{width:38px; height:38px; font-size:16px;}
+    .home-card, #scr-home .panel{max-width:560px; margin-left:auto; margin-right:auto;}
+
+    /* --- setup pe un singur ecran, centrat --- */
+    #scr-jsetup{max-width:720px; margin:0 auto;}
+    #scr-jsetup .panel{margin-bottom:6px; padding-top:10px; padding-bottom:10px;}
+    #scr-jsetup .panel h2{margin-bottom:2px; font-size:20px;}
+    .slot{grid-template-columns:46px minmax(0,1fr) 150px 168px; gap:12px; padding:2px 0; border-top:none;}
+    .av-btn{width:44px; height:44px; font-size:24px;}
+    .opt-sel{font-size:14px; padding:8px 10px;}
+    .masa-grid{display:grid; grid-template-columns:1fr 1fr; gap:4px 22px; align-items:start;}
+    #scr-jsetup .theme-row{margin-top:4px;}
+    #scr-jsetup .opt-row, #scr-jsetup .speed-row{margin-top:4px;}
+    .start-row{flex-wrap:nowrap;}
+    .start-row select{flex:1 1 auto; max-width:260px; padding:11px 12px;}
+    .start-row .btn{flex:0 0 auto; padding:12px 26px; font-size:16px;}
+
+    /* --- masă de joc pe lat: laterale coborâte pe margini --- */
+    #scr-play.on{height:calc(100dvh - 46px); max-width:none; margin:-63px 0 0; position:relative;
+      --fs: min(560px, calc(100dvh - 300px), calc(100vw - 520px)); --felt-top:96px;}
+    #scr-play .op-strip{
+      position:static; justify-content:center; padding:0 0 2px;
+    }
+    #scr-play .op-strip .op.pos-w,
+    #scr-play .op-strip .op.pos-e{
+      position:absolute; top:calc(var(--felt-top) + var(--fs)/2); transform:translateY(-50%);
+      width:190px; flex:0 0 auto; margin:0; z-index:3;
+    }
+    #scr-play .op-strip .op.pos-w{left:max(16px, calc(50vw - var(--fs)/2 - 190px - 78px));}
+    #scr-play .op-strip .op.pos-e{right:max(16px, calc(50vw - var(--fs)/2 - 190px - 78px));}
+    #scr-play .op-strip .op.pos-n{width:230px; flex:0 0 auto; margin:0;}
+    #scr-play .op.side{margin-top:0;}
+
+    .felt{
+      margin:6px auto auto; width:var(--fs); height:var(--fs); max-width:none; max-height:none;
+      flex:0 0 auto; align-self:center;
+    }
+    .tricks{width:300px; height:280px;}
+    .me-box{width:150px;}
+    .hand-wrap{max-width:1200px; margin:0 auto;}
+    .hand-row{gap:12px;}
+    /* atu în afara mesei, lipit de colț */
+    #scr-play .felt{overflow:visible;}
+    #scr-play .atu-tl{left:auto; right:100%; top:0; bottom:auto; margin-right:8px;}
+    #scr-play .atu-bl{left:auto; right:100%; bottom:0; top:auto; margin-right:8px;}
+    #scr-play .atu-tr{right:auto; left:100%; top:0; bottom:auto; margin-left:8px;}
+    #scr-play .atu-br{right:auto; left:100%; bottom:0; top:auto; margin-left:8px;}
+  }
+
+  /* header compact în timpul jocului */
+  body.playing header{padding:7px 12px 3px;}
+  body.playing header h1{font-size:17px;}
+  #scr-play.on{height:calc(100dvh - 46px);}
+
+  /* --- corecții 19 iulie --- */
+  nav[hidden]{display:none !important;}
+  body.sheet-open #scr-play.on{height:calc(100dvh - 46px - var(--sheet-h, 0px));}
+  body.sheet-open .hand-wrap{margin-bottom:var(--sheet-h, 0px);}
+  .op .dl{
+    display:inline-block; background:var(--gold); color:#241c05; font-size:9px; font-weight:800;
+    border-radius:5px; padding:1px 4px; vertical-align:middle; margin-left:3px;
+  }
+  .hand-wrap{min-height:92px;}
+
+  /* --- grup compact de levată, animație, bara mea (19 iul, revizia 2) --- */
+  .felt{display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:6px;}
+  .tricks{
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr));
+    place-items:center; width:224px; height:206px; flex:0 0 auto;
+  }
+  .tricks > div{display:flex; align-items:center; justify-content:center;}
+  .msg .took{
+    display:inline-block; background:rgba(212,165,55,.18); border:1px solid rgba(212,165,55,.55);
+    color:#f0e2bd; border-radius:99px; padding:5px 13px; font-size:14px;
+    animation:pop .25s ease-out;
+  }
+  @keyframes pop{from{transform:scale(.8); opacity:0;} to{transform:scale(1); opacity:1;}}
+
+  @keyframes fly-n{to{transform:translateY(-105px) scale(.72); opacity:0;}}
+  @keyframes fly-s{to{transform:translateY( 105px) scale(.72); opacity:0;}}
+  @keyframes fly-w{to{transform:translateX(-115px) scale(.72); opacity:0;}}
+  @keyframes fly-e{to{transform:translateX( 115px) scale(.72); opacity:0;}}
+  .k.fly-n{animation:fly-n .5s cubic-bezier(.5,0,.75,0) .28s forwards;}
+  .k.fly-s{animation:fly-s .5s cubic-bezier(.5,0,.75,0) .28s forwards;}
+  .k.fly-w{animation:fly-w .5s cubic-bezier(.5,0,.75,0) .28s forwards;}
+  .k.fly-e{animation:fly-e .5s cubic-bezier(.5,0,.75,0) .28s forwards;}
+
+  @keyframes flash{0%,100%{box-shadow:none;} 30%{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(212,165,55,.75);}}
+  .op.flash{animation:flash .85s ease-out;}
+
+
+
+
+  /* în licitație nu există cărți pe masă — nu rezerv spațiul grupului */
+  .felt{overflow:hidden;}
+  .felt.bidding .tricks{display:none;}
+  .tricks{max-height:100%; max-width:100%;}
+  .msg{padding:0 10px;}
+
+  /* numele câștigătorului apare în locul cărților, în timp ce ele zboară */
+  .tricks{position:relative;}
+  .took-center{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; animation:took-in .3s ease-out .22s both;
+  }
+  @keyframes took-in{from{opacity:0; transform:scale(.72);} to{opacity:1; transform:scale(1);}}
+  .took{
+    display:inline-block; background:rgba(212,165,55,.22); border:1px solid rgba(212,165,55,.6);
+    color:#f7ecd2; border-radius:99px; padding:7px 15px; font-size:15px; text-align:center;
+    backdrop-filter:blur(2px); box-shadow:0 3px 12px rgba(0,0,0,.45);
+  }
+  .k.fly-n,.k.fly-s,.k.fly-w,.k.fly-e{animation-delay:.16s; animation-duration:.46s;}
+
+
+  .op .dl{font-size:8.5px; padding:1px 4px; letter-spacing:.02em;}
+
+  /* laterala stânga/dreapta coboară un rând — sugerează așezarea la masă */
+  .op-strip{align-items:flex-start;}
+  .op.side{margin-top:20px;}
+  @media (min-width:820px){ .op.side{margin-top:28px;} }
+
+  /* panoul meu de scor, static, lângă cărți în dreapta */
+  .felt{position:relative;}
+  .me-box{width:90px; flex:0 0 auto;}
+  .me-box .left{margin-top:1px;}
+
+  /* atu în colțul mesei, spre următorul care împarte */
+  .atu-corner{
+    position:absolute; z-index:2; display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:5px; border-radius:11px; background:rgba(0,0,0,.30); border:1px solid rgba(212,165,55,.45);
+  }
+  .atu-corner .lb{font-size:10px; font-weight:800; color:var(--gold); letter-spacing:.06em;}
+  .atu-corner.fara{padding:8px 10px; border-color:rgba(255,255,255,.2);}
+  .atu-corner.fara b{font-size:11px; text-align:center; color:#cfe0d5; letter-spacing:.05em; line-height:1.2;}
+  .atu-tl{left:8px; top:8px;}
+  .atu-tr{right:8px; top:8px;}
+  .atu-bl{left:8px; bottom:8px;}
+  .atu-br{right:8px; bottom:8px;}
+
+  /* rândul de jos: cărțile + panoul meu în dreapta */
+  .hand-row{display:flex; align-items:flex-end; gap:8px; justify-content:center;}
+  .hand-row .hand{flex:0 1 auto; min-width:0;}
+  .me-side{flex:0 0 auto;}
+
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <h1>W I S T <span class="suit">♠</span></h1>
+    <div id="hdr-info"></div>
+  </div>
+  <div id="hdr-sub"></div>
+  <button id="btn-home" hidden>☰ Meniu</button>
+</header>
+<div id="track" hidden></div>
+
+<!-- ============ ACASĂ ============ -->
+<section id="scr-home" class="screen on">
+  <button class="home-card" id="go-joc">
+    <span class="ic">🂡</span>
+    <span><span class="tt">Joacă</span><span class="ds">Tu contra a 3 jucători virtuali</span></span>
+    <span class="badge" id="badge-joc" hidden>reia</span>
+  </button>
+  <button class="home-card" id="go-scor">
+    <span class="ic">▦</span>
+    <span><span class="tt">Tabelă de scor</span><span class="ds">Pentru jocul cu cărți adevărate</span></span>
+    <span class="badge" id="badge-scor" hidden>reia</span>
+  </button>
+  <p class="muted-l" style="padding:6px 4px 0;">Scor: licitat = făcut → făcute + 5. Altfel → −|licitat − făcut|.</p>
+</section>
+
+<!-- ============ SETUP TABELĂ ============ -->
+<section id="scr-setup" class="screen">
+  <div class="panel">
+    <h2>Joc nou</h2>
+    <p class="muted">Tabelă de scor pentru wist. Completați numele în ordinea în care stați la masă.</p>
+    <label class="fld">Număr de jucători</label>
+    <div class="seg" id="np-seg">
+      <button data-n="4">4</button><button data-n="5">5</button><button data-n="6">6</button>
+    </div>
+    <label class="fld">Jucători (în ordinea de la masă)</label>
+    <div id="names" style="margin-top:8px;"></div>
+    <label class="fld">Primul care împarte</label>
+    <select id="first-dealer"></select>
+    <button class="btn" id="btn-start">Începe jocul</button>
+  </div>
+  <div class="panel" id="resume-panel" hidden>
+    <h2>Joc în desfășurare</h2>
+    <p class="muted" id="resume-info"></p>
+    <button class="btn ghost" id="btn-resume">Continuă jocul salvat</button>
+  </div>
+  <div class="panel" id="hist-panel" hidden>
+    <h2>Istoric</h2>
+    <div id="hist-list"></div>
+  </div>
+</section>
+
+<!-- ============ ROUND ENTRY ============ -->
+<section id="scr-game" class="screen">
+  <div class="panel" id="round-panel"></div>
+</section>
+
+<!-- ============ SCORE TABLE ============ -->
+<section id="scr-table" class="screen">
+  <div class="tbl-wrap" id="tbl-wrap"></div>
+  <p class="muted-l" style="padding:10px 4px 0;">Atinge un rând completat ca să-l corectezi. Punctul auriu ● marchează cine a împărțit.</p>
+</section>
+
+<!-- ============ STANDINGS ============ -->
+<section id="scr-stand" class="screen">
+  <div class="panel winner-panel" id="winner-panel" hidden></div>
+  <div class="panel"><h2>Clasament</h2><div id="stand-list"></div></div>
+  <div class="panel" id="chart-panel"><h2>Evoluția scorului</h2><div id="chart"></div></div>
+  <button class="btn ghost" id="btn-new" style="margin-top:2px;">Joc nou</button>
+</section>
+
+<!-- ============ SETUP JOC vs AI ============ -->
+<section id="scr-jsetup" class="screen">
+  <div class="panel">
+    <h2>Jucătorii</h2>
+    <div id="slots"></div>
+    <div class="setup-err" id="setup-err" hidden></div>
+  </div>
+  <div class="panel">
+    <h2>Masa</h2>
+    <div class="masa-grid">
+      <div>
+        <label class="opt-lbl">Postav</label>
+        <div class="theme-row" id="masa-row"></div>
+      </div>
+      <div>
+        <label class="opt-lbl">Spatele cărților</label>
+        <div class="theme-row" id="spate-row"></div>
+      </div>
+      <div>
+        <label class="opt-lbl">Sunet</label>
+        <div class="opt-row" id="snd-row"></div>
+      </div>
+      <div>
+        <label class="opt-lbl">Ritmul adversarilor</label>
+        <div class="speed-row"><span>🐢</span><input type="range" id="j-speed" min="0" max="4" step="1"><span>⚡</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <label class="opt-lbl">Cine împarte primul</label>
+    <select id="j-dealer"></select>
+    <label class="opt-lbl" style="margin-top:10px;">Începe — alege sensul de joc</label>
+    <div class="start-row">
+      <button class="btn" id="btn-start-cw" title="în sensul acelor de ceasornic">↻ Spre dreapta</button>
+      <button class="btn" id="btn-start-ccw" title="invers acelor de ceasornic">↺ Spre stânga</button>
+    </div>
+    <button class="btn ghost" id="btn-jresume" hidden style="margin-top:8px;">Continuă jocul salvat</button>
+  </div>
+</section>
+
+<!-- ============ MASA DE JOC ============ -->
+<section id="scr-play" class="screen">
+  <div class="op-strip" id="op-strip"></div>
+  <div class="felt" id="felt"></div>
+  <div class="hand-wrap">
+    <div class="hand-row">
+      <div class="hand" id="hand"></div>
+      <div class="me-side" id="me-side"></div>
+      <div class="bid-slot" id="bid-slot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL JOC ============ -->
+<section id="scr-jover" class="screen">
+  <div class="panel winner-panel" id="j-winner"></div>
+  <div class="panel"><h2>Rezultat final</h2><div id="j-final"></div></div>
+  <button class="btn" id="btn-jagain">Joc nou</button>
+  <button class="btn ghost" id="btn-jhome" style="margin-top:10px;">Meniu</button>
+</section>
+
+<nav id="nav" hidden>
+  <button data-scr="game" class="on"><span class="ic">🂠</span>Rundă</button>
+  <button data-scr="table"><span class="ic">▦</span>Tabelă</button>
+  <button data-scr="stand"><span class="ic">♛</span>Clasament</button>
+</nav>
+
+<script>
+"use strict";
+/* ============================================================
+   WIST — tabelă de scor mobilă
+   Scor: licitat = făcut → făcute + 5 ; altfel → −|licitat − făcut|
+   Runde: N×1, 2..7, N×8, 7..2, N×1  (N = nr. jucători)
+   Regulă licitații: suma licitațiilor ≠ nr. de mâini
+   (ultimul care licitează — dealerul — are valoarea interzisă blocată)
+   ============================================================ */
+
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>[...document.querySelectorAll(s)];
+
+/* ---------- persistență: window.storage (Claude) sau localStorage (hosting propriu) ---------- */
+const store = {
+  async get(k){
+    try{
+      if (window.storage) { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; }
+    }catch(e){ return null; }
+    try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  },
+  async set(k,v){
+    const s = JSON.stringify(v);
+    try{ if (window.storage) { await window.storage.set(k,s); return; } }catch(e){}
+    try{ localStorage.setItem(k,s); }catch(e){}
+  },
+  async del(k){
+    try{ if (window.storage) { await window.storage.delete(k); return; } }catch(e){}
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+};
+
+/* ---------- model ---------- */
+let G = null;          // jocul curent
+let editIdx = null;    // indexul rundei aflate în corectare (sau null = runda curentă)
+let draft = null;      // { bids:[], tricks:[], phase }
+let history = [];
+
+function roundsFor(n){
+  const r = [];
+  for(let i=0;i<n;i++) r.push(1);
+  for(let v=2;v<=7;v++) r.push(v);
+  for(let i=0;i<n;i++) r.push(8);
+  for(let v=7;v>=2;v--) r.push(v);
+  for(let i=0;i<n;i++) r.push(1);
+  return r;
+}
+const dealerOf = (i)=> (G.firstDealer + i) % G.players.length;
+const bidOrder = (i)=>{ // dealerul licitează ultimul
+  const n = G.players.length, d = dealerOf(i), o=[];
+  for(let k=1;k<=n;k++) o.push((d+k)%n);
+  return o;
+};
+const scoreOf = (bid,tricks)=> bid===tricks ? tricks+5 : -Math.abs(bid-tricks);
+const totals = (upTo)=>{ // totaluri cumulate până la runda upTo inclusiv
+  const t = G.players.map(()=>0);
+  G.data.forEach((d,i)=>{
+    if(d && (upTo===undefined || i<=upTo))
+      d.bids.forEach((b,p)=> t[p]+=scoreOf(b, d.tricks[p]));
+  });
+  return t;
+};
+const nextRoundIdx = ()=> G.data.findIndex(d=>d===null);
+const isFinished  = ()=> nextRoundIdx()===-1;
+
+/* ---------- setup ---------- */
+let setupN = 4;
+function renderSetup(){
+  $$('#np-seg button').forEach(b=> b.classList.toggle('sel', +b.dataset.n===setupN));
+  const box = $('#names'); const old = [...box.querySelectorAll('input')].map(i=>i.value);
+  box.innerHTML = '';
+  for(let i=0;i<setupN;i++){
+    const row = document.createElement('div'); row.className='name-row';
+    row.innerHTML = `<span class="idx">${i+1}</span>
+      <input type="text" maxlength="14" placeholder="Jucător ${i+1}" value="${old[i]?escapeHtml(old[i]):''}">`;
+    box.appendChild(row);
+  }
+  refreshDealerSelect();
+  box.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', refreshDealerSelect));
+}
+function refreshDealerSelect(){
+  const sel = $('#first-dealer'); const keep = sel.value;
+  sel.innerHTML='';
+  [...$('#names').querySelectorAll('input')].forEach((inp,i)=>{
+    const o = document.createElement('option');
+    o.value = i; o.textContent = inp.value.trim() || `Jucător ${i+1}`;
+    sel.appendChild(o);
+  });
+  if(keep!=='' && +keep<setupN) sel.value = keep;
+}
+$('#np-seg').addEventListener('click', e=>{
+  if(e.target.dataset.n){ setupN = +e.target.dataset.n; renderSetup(); }
+});
+$('#btn-start').addEventListener('click', async ()=>{
+  const names = [...$('#names').querySelectorAll('input')]
+    .map((inp,i)=> inp.value.trim() || `Jucător ${i+1}`);
+  G = {
+    players: names,
+    firstDealer: +$('#first-dealer').value,
+    rounds: roundsFor(names.length),
+    data: roundsFor(names.length).map(()=>null),
+    startedAt: new Date().toISOString(),
+    savedToHistory: false
+  };
+  editIdx = null; draft = null;
+  await save();
+  show('game');
+});
+$('#btn-resume').addEventListener('click', ()=> show(isFinished()?'stand':'game'));
+$('#btn-new').addEventListener('click', async ()=>{
+  if(!isFinished() && !confirm('Jocul curent nu este terminat. Începi unul nou?')) return;
+  await finishToHistory();
+  G = null; draft = null; editIdx = null;
+  await store.del('wist-current');
+  show('setup');
+});
+
+/* ---------- rundă: licitații + rezultate ---------- */
+function startDraft(idx){
+  const done = G.data[idx];
+  draft = done
+    ? { bids:[...done.bids], tricks:[...done.tricks], phase:'bids' }
+    : { bids:G.players.map(()=>null), tricks:G.players.map(()=>null), phase:'bids' };
+}
+function renderGame(){
+  const idx = editIdx!==null ? editIdx : nextRoundIdx();
+  if(idx===-1){ show('stand'); return; }
+  if(!draft) startDraft(idx);
+
+  const R = G.rounds[idx], n = G.players.length, d = dealerOf(idx), order = bidOrder(idx);
+  const P = $('#round-panel');
+  const isBids = draft.phase==='bids';
+  const vals = isBids ? draft.bids : draft.tricks;
+  const sum = vals.reduce((a,v)=> a+(v??0), 0);
+  const allSet = vals.every(v=> v!==null);
+
+  let html = `
+    <span class="phase-pill ${isBids?'bids':'tricks'}">${isBids?'Licitații':'Rezultate'}</span>
+    <h2>Runda ${idx+1} din ${G.rounds.length} — joc de ${R}</h2>
+    <p class="muted">Împarte: <b>${escapeHtml(G.players[d])}</b>${editIdx!==null?' · corectezi o rundă anterioară':''}</p>`;
+
+  order.forEach(p=>{
+    const isDealer = p===d;
+    // valoarea interzisă pentru dealer la licitații
+    let forbidden = null;
+    if(isBids && isDealer){
+      const others = order.filter(q=>q!==d).reduce((a,q)=> a+(draft.bids[q]??0), 0);
+      const othersSet = order.filter(q=>q!==d).every(q=> draft.bids[q]!==null);
+      if(othersSet){ const f = R - others; if(f>=0 && f<=R) forbidden = f; }
+    }
+    html += `<div class="p-block">
+      <div class="p-head">
+        <span class="p-name">${escapeHtml(G.players[p])}</span>
+        ${isDealer?'<span class="p-tag dealer">împarte</span>':''}
+        ${!isBids?`<span class="p-bidinfo">a licitat <b>${draft.bids[p]}</b></span>`:''}
+      </div>
+      <div class="chips" data-p="${p}">`;
+    for(let v=0; v<=R; v++){
+      const sel = vals[p]===v;
+      const dis = isBids && forbidden===v;
+      html += `<button class="chip ${sel?'sel':''}" data-v="${v}" ${dis?'disabled':''}>${v}</button>`;
+    }
+    html += `</div>${isBids&&forbidden!==null?`<p class="muted" style="margin:7px 0 0;">Nu poate licita ${forbidden} — suma ar fi egală cu ${R}.</p>`:''}</div>`;
+  });
+
+  if(isBids){
+    html += `<div class="sum-bar ${allSet?(sum===R?'bad':'ok'):''}">
+        <span>Suma licitațiilor</span><span class="val">${sum} / ${R}</span></div>`;
+    if(allSet && sum===R) html += `<p class="muted" style="color:var(--red);margin:8px 0 0;">Suma licitațiilor nu poate fi egală cu numărul de mâini.</p>`;
+    html += `<div class="actions">
+      ${editIdx!==null?`<button class="btn ghost" id="btn-cancel">Renunță</button>`:''}
+      <button class="btn" id="btn-next" ${allSet&&sum!==R?'':'disabled'}>Continuă la rezultate</button></div>`;
+  }else{
+    html += `<div class="sum-bar ${allSet?(sum===R?'ok':'bad'):''}">
+        <span>Mâini făcute</span><span class="val">${sum} / ${R}</span></div>`;
+    if(allSet && sum!==R) html += `<p class="muted" style="color:var(--red);margin:8px 0 0;">Suma mâinilor făcute trebuie să fie exact ${R}.</p>`;
+    html += `<div class="actions">
+      <button class="btn ghost" id="btn-back">Înapoi</button>
+      <button class="btn" id="btn-save" ${allSet&&sum===R?'':'disabled'}>Salvează runda</button></div>`;
+  }
+  P.innerHTML = html;
+
+  P.querySelectorAll('.chips').forEach(row=>{
+    row.addEventListener('click', e=>{
+      const b = e.target.closest('.chip'); if(!b || b.disabled) return;
+      const p = +row.dataset.p, v = +b.dataset.v;
+      (isBids ? draft.bids : draft.tricks)[p] = v;
+      renderGame();
+    });
+  });
+  const nx = $('#btn-next'); if(nx) nx.addEventListener('click', ()=>{ draft.phase='tricks'; renderGame(); });
+  const bk = $('#btn-back'); if(bk) bk.addEventListener('click', ()=>{ draft.phase='bids'; renderGame(); });
+  const cn = $('#btn-cancel'); if(cn) cn.addEventListener('click', ()=>{ editIdx=null; draft=null; show('table'); });
+  const sv = $('#btn-save'); if(sv) sv.addEventListener('click', async ()=>{
+    G.data[idx] = { bids:[...draft.bids], tricks:[...draft.tricks] };
+    const wasEdit = editIdx!==null;
+    editIdx = null; draft = null;
+    await save();
+    if(isFinished()){ await finishToHistory(); show('stand'); }
+    else show(wasEdit ? 'table' : 'game');
+  });
+}
+
+/* ---------- tabelă ---------- */
+function renderTable(){
+  const n = G.players.length;
+  let h = `<table><thead>
+    <tr class="names"><th></th>${G.players.map(p=>`<th colspan="3">${escapeHtml(p)}</th>`).join('')}</tr>
+    <tr><th>Joc</th>${G.players.map(()=>'<th>Lic</th><th>Făc</th><th>Scor</th>').join('')}</tr>
+  </thead><tbody>`;
+  const cur = nextRoundIdx();
+  G.rounds.forEach((R,i)=>{
+    const d = G.data[i], deal = dealerOf(i);
+    h += `<tr class="${d?'editable':''} ${i===cur?'cur':''}" data-i="${i}">
+      <td class="rnd">${R}</td>`;
+    for(let p=0;p<n;p++){
+      const dot = p===deal ? ' <span class="deal-dot">●</span>' : '';
+      if(d){
+        const s = scoreOf(d.bids[p], d.tricks[p]);
+        h += `<td>${d.bids[p]}${dot}</td><td>${d.tricks[p]}</td><td class="${s<0?'neg':'pos'}">${s>0?'+':''}${s}</td>`;
+      }else{
+        h += `<td>${dot||''}</td><td></td><td></td>`;
+      }
+    }
+    h += '</tr>';
+  });
+  const T = totals();
+  h += `</tbody><tfoot><tr><td>TOTAL</td>${T.map(t=>`<td colspan="3" class="${t<0?'neg':''}">${t}</td>`).join('')}</tr></tfoot></table>`;
+  $('#tbl-wrap').innerHTML = h;
+  $$('#tbl-wrap tr.editable').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      editIdx = +tr.dataset.i; draft = null; show('game');
+    });
+  });
+}
+
+/* ---------- clasament + grafic ---------- */
+function renderStand(){
+  const T = totals();
+  const order = T.map((t,p)=>({t,p})).sort((a,b)=> b.t-a.t);
+  const fin = isFinished();
+  const W = $('#winner-panel');
+  if(fin){
+    W.hidden = false;
+    W.innerHTML = `<div class="trophy">🏆</div><h2>${escapeHtml(G.players[order[0].p])} câștigă!</h2>
+      <p class="muted">${order[0].t} puncte în ${G.rounds.length} runde</p>`;
+  } else W.hidden = true;
+
+  $('#stand-list').innerHTML = order.map((o,k)=>`
+    <div class="stand ${k===0?'first':''}">
+      <span class="pos-n">${k+1}</span>
+      <span class="nm">${escapeHtml(G.players[o.p])}</span>
+      <span class="sc ${o.t<0?'neg':''}">${o.t}</span>
+    </div>`).join('');
+
+  renderChart();
+}
+function renderChart(){
+  const played = G.data.filter(d=>d).length;
+  const box = $('#chart');
+  if(played<2){ box.innerHTML = '<p class="muted">Graficul apare după câteva runde.</p>'; return; }
+  const n = G.players.length;
+  const series = G.players.map(()=>[0]);
+  const run = G.players.map(()=>0);
+  G.data.forEach(d=>{
+    if(!d) return;
+    d.bids.forEach((b,p)=>{ run[p]+=scoreOf(b,d.tricks[p]); });
+    run.forEach((v,p)=> series[p].push(v));
+  });
+  const all = series.flat();
+  const mn = Math.min(...all), mx = Math.max(...all);
+  const Wd=340, Ht=190, pad=26;
+  const X = (i)=> pad + i*(Wd-pad-8)/(series[0].length-1);
+  const Y = (v)=> mx===mn ? Ht/2 : pad/2 + (Ht-pad) * (1 - (v-mn)/(mx-mn));
+  const cols = ['#b8352c','#1f5fa8','#2c7a4b','#d4a537','#7b4bab','#20808d'];
+  let svg = `<svg viewBox="0 0 ${Wd} ${Ht+30}" role="img" aria-label="Evoluția scorurilor">`;
+  if(mn<0 && mx>0) svg += `<line x1="${pad}" y1="${Y(0)}" x2="${Wd-8}" y2="${Y(0)}" stroke="#d8cfb8" stroke-dasharray="4 4"/>`;
+  series.forEach((s,p)=>{
+    svg += `<polyline fill="none" stroke="${cols[p%cols.length]}" stroke-width="2.5"
+      points="${s.map((v,i)=>`${X(i)},${Y(v)}`).join(' ')}"/>`;
+  });
+  svg += `<text x="${pad-4}" y="${Y(mx)+4}" font-size="11" text-anchor="end" fill="#6b6250">${mx}</text>`;
+  svg += `<text x="${pad-4}" y="${Y(mn)+4}" font-size="11" text-anchor="end" fill="#6b6250">${mn}</text>`;
+  // legendă
+  let lx = pad;
+  series.forEach((s,p)=>{
+    svg += `<rect x="${lx}" y="${Ht+12}" width="10" height="10" rx="2" fill="${cols[p%cols.length]}"/>
+      <text x="${lx+14}" y="${Ht+21}" font-size="11" fill="#211d16">${escapeHtml(G.players[p])}</text>`;
+    lx += 16 + 7*Math.max(4, G.players[p].length);
+  });
+  svg += '</svg>';
+  box.innerHTML = svg;
+}
+
+/* ---------- istoric ---------- */
+async function finishToHistory(){
+  if(!G || G.savedToHistory) return;
+  const played = G.data.filter(d=>d).length;
+  if(played===0) return;
+  const T = totals();
+  const order = T.map((t,p)=>({t, name:G.players[p]})).sort((a,b)=> b.t-a.t);
+  history.unshift({
+    date: new Date().toISOString().slice(0,10),
+    complete: isFinished(),
+    standings: order
+  });
+  history = history.slice(0,20);
+  G.savedToHistory = true;
+  await store.set('wist-history', history);
+}
+function renderHistory(){
+  const P = $('#hist-panel');
+  if(!history.length){ P.hidden = true; return; }
+  P.hidden = false;
+  $('#hist-list').innerHTML = history.map(h=>`
+    <div class="stand">
+      <span class="nm">${h.date}${h.complete?'':' <span class="muted">(neterminat)</span>'}</span>
+      <span class="muted" style="text-align:right;">${h.standings.map((s,i)=>`${i+1}. ${escapeHtml(s.name)} ${s.t}`).join(' · ')}</span>
+    </div>`).join('');
+}
+
+/* ---------- navigare / randare ---------- */
+function renderTrack(){
+  const t = $('#track');
+  if(!G){ t.hidden = true; return; }
+  t.hidden = false;
+  const cur = editIdx!==null ? editIdx : nextRoundIdx();
+  t.innerHTML = G.rounds.map((R,i)=>{
+    const cls = i===cur ? 'now' : (G.data[i] ? 'done' : '');
+    return `<span class="tick ${cls}">${R}</span>`;
+  }).join('');
+  const now = t.querySelector('.now');
+  if(now) now.scrollIntoView({inline:'center', block:'nearest'});
+}
+function show(scr){
+  $$('.screen').forEach(s=> s.classList.remove('on'));
+  $('#scr-'+(scr==='table'?'table':scr)).classList.add('on');
+  $('#nav').hidden = (scr==='setup');
+  $$('#nav button').forEach(b=> b.classList.toggle('on', b.dataset.scr===scr));
+  $('#hdr-sub').textContent = G ? `${G.players.length} jucători · ${G.rounds.length} runde` : '';
+  renderTrack();
+  if(scr==='setup'){ renderSetup(); renderResume(); renderHistory(); }
+  if(scr==='game') renderGame();
+  if(scr==='table') renderTable();
+  if(scr==='stand') renderStand();
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.scr==='game' && editIdx===null) draft = draft; // păstrează schița curentă
+  show(b.dataset.scr);
+});
+function renderResume(){
+  const P = $('#resume-panel');
+  if(!G){ P.hidden = true; return; }
+  P.hidden = false;
+  const played = G.data.filter(d=>d).length;
+  $('#resume-info').textContent =
+    `${G.players.join(', ')} — ${played}/${G.rounds.length} runde jucate.`;
+}
+
+
+/* ============================================================
+   JOC CONTRA CALCULATORULUI
+   Motor portat din versiunea React (mai 2026), UI rescris pentru portret.
+   AI pe două axe independente:
+     NIVEL     = cât de bine joacă  (ușor / mediu / greu)
+     TIPOLOGIE = cum licitează      (rezervat / echilibrat / agresiv)
+   Parametrii de licitație sunt calibrați pe 13 jocuri reale
+   (Diana → rezervat, Remus → echilibrat, Vlad → agresiv).
+   ============================================================ */
+
+const JRANKS = ['7','8','9','10','J','Q','K','A'];
+const JSUITS = ['S','H','D','C'];
+const JSYM   = {S:'♠', H:'♥', D:'♦', C:'♣'};
+const JRO    = {S:'pică', H:'cupă', D:'caro', C:'treflă'};
+const JRED   = new Set(['H','D']);
+const JVAL   = {}; JRANKS.forEach((r,i)=> JVAL[r] = i+7);
+const JSEQ   = [1,1,1,1,2,3,4,5,6,7,8,8,8,8,7,6,5,4,3,2,1,1,1,1];
+const SPEEDS = [1800,1100,650,320,120];
+
+/* tipologii — calibrate prin căutare pe grilă pe statisticile reale */
+const STYLE = {
+  rezervat:  {mult:0.80, passT:0.37, lean:-1, nume:'Rezervat'},
+  echilibrat:{mult:0.90, passT:0.45, lean: 0, nume:'Echilibrat'},
+  agresiv:   {mult:0.99, passT:0.55, lean:+1, nume:'Agresiv'}
+};
+const DIFF = {
+  usor:  {noise:1.1, count:false, sim:0,  nume:'Ușor'},
+  mediu: {noise:0.3, count:true,  sim:0,  nume:'Mediu'},
+  greu:  {noise:0.0, count:true,  sim:24, nume:'Greu'}
+};
+
+const MASE   = [['verde','#14472f'],['albastru','#16305a'],['bordo','#4a1c24'],['lemn','#4a3018']];
+const SPATE  = [['romb','repeating-linear-gradient(45deg,#8c1f1a 0 5px,#a82a23 5px 10px)'],
+                ['dungi','repeating-linear-gradient(90deg,#1a3a6a 0 4px,#28529b 4px 8px)'],
+                ['carbon','repeating-linear-gradient(45deg,#20242a 0 4px,#2e343d 4px 8px)'],
+                ['auriu','repeating-linear-gradient(45deg,#6b5310 0 5px,#8f7016 5px 10px)']];
+const AV_OM  = ['🧑','👨','👩','🧔','👴','👵','🧑‍💼','🧑‍🎓','🧑‍✈️','🏊','🦸','🧙‍♂️','🕵️','🧑‍🍳'];
+const AV_AI  = ['🤖','👾','🦊','🐻','🦁','🐯','🐺','🦉','🎯','🎲','🃏','🧠','🐉','🦅'];
+
+/* ---------- motor (funcții pure) ---------- */
+function jDeck(){ const d=[]; for(const s of JSUITS) for(const r of JRANKS) d.push({id:r+s, s, r}); return d; }
+function jShuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function jDeal(ri){
+  const n = JSEQ[ri], deck = jShuffle(jDeck());
+  const hands = [0,1,2,3].map(i => deck.slice(i*n,(i+1)*n));
+  let trumpCard = null, trump = null;
+  if (n*4 < 32){ trumpCard = deck[n*4]; trump = trumpCard.s; }   // prima carte rămasă în pachet
+  // la n=8 se împarte tot pachetul: rundă fără atu, ia cea mai mare carte din culoarea cerută
+  hands.forEach(h => h.sort((a,b)=> a.s===b.s ? JVAL[b.r]-JVAL[a.r] : JSUITS.indexOf(a.s)-JSUITS.indexOf(b.s)));
+  return {hands, trump, trumpCard, n};
+}
+function jLegal(hand, trick, trump){
+  if(!trick || !trick.length) return hand;
+  const lead = trick[0].c.s;
+  const f = hand.filter(c=> c.s===lead);
+  if (f.length) return f;                    // ai culoarea → obligat s-o dai
+  const t = hand.filter(c=> c.s===trump);
+  if (t.length) return t;                    // n-ai culoarea, dar ai atu → obligat să tai
+  return hand;                               // n-ai nici culoare, nici atu → orice
+}
+function jWinner(trick, trump){
+  let best = trick[0];
+  for(const t of trick.slice(1)){
+    if (t.c.s===trump && best.c.s!==trump) best = t;
+    else if (t.c.s===best.c.s && JVAL[t.c.r] > JVAL[best.c.r]) best = t;
+  }
+  return best.p;
+}
+const jScore = (bid,tr)=> bid===tr ? tr+5 : -Math.abs(bid-tr);
+
+/* ---------- evaluarea mâinii ---------- */
+function jEstimate(hand, trump, trumpCardRank){
+  const by = {};
+  for(const c of hand) (by[c.s] = by[c.s] || []).push(c.r);
+  const n = hand.length; let x = 0;
+  // câte cărți de atu, mai mari decât cartea mea, sunt încă în joc?
+  const myTrumps = new Set((by[trump]||[]));
+  function higherTrumpsLive(rank){
+    let cnt = 0;
+    for(const r of JRANKS){
+      if (JVAL[r] <= JVAL[rank]) continue;         // doar mai mari
+      if (r === trumpCardRank) continue;           // indicatorul de atu e scos din joc
+      if (myTrumps.has(r)) continue;               // e chiar în mâna mea
+      cnt++;
+    }
+    return cnt;
+  }
+  for(const c of hand){
+    const L = by[c.s].length, t = (c.s===trump);
+    if (t){
+      // valoarea unei cărți de atu = cât de sus e printre atuurile rămase în joc
+      const higher = higherTrumpsLive(c.r);
+      let v;
+      if      (higher === 0) v = 0.95;             // cea mai mare atu vie → ia sigur
+      else if (higher === 1) v = 0.78;
+      else if (higher === 2) v = 0.55;
+      else if (higher === 3) v = 0.38;
+      else                   v = 0.22;
+      // atuurile lungi valorează ceva în plus (poți tăia și controla)
+      if (L >= 2) v += Math.min(L-1, 3) * 0.12;
+      x += v;
+    }
+    else if (c.r==='A') x += 1.0;
+    else if (c.r==='K') x += L>=2 ? 0.85 : 0.5;
+    else if (c.r==='Q') x += L>=3 ? 0.55 : (L===2 ? 0.3 : 0.15);
+    else if (c.r==='J') x += L>=4 ? 0.3  : (L===3 ? 0.15 : 0.05);
+  }
+  if (trump && n>=4){                       // valoare de tăiere (culori scurte + atuuri de rezervă)
+    const tr = (by[trump]||[]).length;
+    const scurte = JSUITS.filter(s=> s!==trump && by[s] && by[s].length<=1).length;
+    x += Math.min(tr, scurte) * 0.3;
+  }
+  return Math.max(0, Math.min(x, n));
+}
+
+/* ---------- licitație ---------- */
+function jBid(hand, trump, n, diffKey, styleKey, isDealer, bidsSoFar, trumpCardRank){
+  const S = STYLE[styleKey], D = DIFF[diffKey];
+  let est = jEstimate(hand, trump, trumpCardRank);
+  if (D.noise) est += (Math.random()*2-1) * D.noise;
+  est = Math.max(0, est);
+  const v = est * S.mult;
+  let bid = v < S.passT ? 0 : Math.min(n, Math.max(1, Math.round(v)));
+  if (isDealer){
+    const forb = n - bidsSoFar.reduce((a,b)=>a+b,0);
+    if (bid === forb){
+      const sus = Math.min(n, bid+1), jos = Math.max(0, bid-1);
+      if (S.lean > 0)      bid = sus !== forb ? sus : jos;
+      else if (S.lean < 0) bid = jos !== forb ? jos : sus;
+      else                 bid = (Math.random()<0.5 && jos!==forb) ? jos : (sus!==forb ? sus : jos);
+    }
+  }
+  return Math.max(0, Math.min(n, bid));
+}
+
+/* ---------- joc: euristică ---------- */
+function jTopRemaining(card, seen, myHand){
+  // e cea mai mare carte rămasă din culoarea ei, din ce nu s-a văzut?
+  for(const r of JRANKS){
+    if (JVAL[r] <= JVAL[card.r]) continue;
+    const id = r + card.s;
+    if (!seen.has(id) && !myHand.some(c=> c.id===id)) return false;
+  }
+  return true;
+}
+function jHeuristic(hand, trick, trump, ctx){
+  const legal = jLegal(hand, trick, trump);
+  if (legal.length === 1) return legal[0];
+  const asc  = [...legal].sort((a,b)=> JVAL[a.r]-JVAL[b.r]);
+  const desc = [...asc].reverse();
+  const need = ctx.bid - ctx.won;            // câte levate îmi mai trebuie
+  const left = hand.length;                  // câte mai am de jucat
+  const seen = ctx.seen || new Set();
+
+  if (!trick || !trick.length){              // eu deschid
+    if (need <= 0){
+      const mici = asc.filter(c=> c.s!==trump);
+      return mici.length ? mici[0] : asc[0];
+    }
+    if (need >= left) return desc[0];        // trebuie toate — dau tare
+    if (ctx.count){
+      const sigure = desc.filter(c=> jTopRemaining(c, seen, hand));
+      if (sigure.length) return sigure[0];
+    }
+    const atu = desc.filter(c=> c.s===trump);
+    return atu.length ? atu[0] : desc[0];
+  }
+
+  const canWin = legal.filter(c=> jWinner([...trick, {p:ctx.me, c}], trump) === ctx.me);
+  const lose   = legal.filter(c=> !canWin.some(w=> w.id===c.id));
+  if (need > 0){
+    if (canWin.length) return canWin.sort((a,b)=> JVAL[a.r]-JVAL[b.r])[0];  // câștig cât mai ieftin
+    return asc[0];
+  }
+  if (lose.length) return lose.sort((a,b)=> JVAL[b.r]-JVAL[a.r])[0];        // scap cea mai mare care nu ia
+  return asc[0];
+}
+
+/* ---------- joc: simulare (nivel greu) ---------- */
+function jUnseen(state, me){
+  const out = [];
+  const known = new Set();
+  state.hands[me].forEach(c=> known.add(c.id));
+  (state.seen || new Set()).forEach(id=> known.add(id));
+  state.trick.forEach(t=> known.add(t.c.id));
+  if (state.trumpCard) known.add(state.trumpCard.id);
+  for(const c of jDeck()) if(!known.has(c.id)) out.push(c);
+  return out;
+}
+function jDeterminize(state, me){
+  const pool = jShuffle(jUnseen(state, me));
+  const need = [0,1,2,3].map(p=> p===me ? 0 : state.hands[p].length);
+  for(let attempt=0; attempt<28; attempt++){
+    const bag = jShuffle(pool), out = [[],[],[],[]];
+    let ok = true;
+    for(const c of bag){
+      const cand = [0,1,2,3].filter(p=> p!==me && out[p].length<need[p] && !(state.voids[p]||{})[c.s]);
+      if (!cand.length){ ok = false; break; }
+      out[cand[(Math.random()*cand.length)|0]].push(c);
+    }
+    if (ok && [0,1,2,3].every(p=> p===me || out[p].length===need[p])){
+      out[me] = [...state.hands[me]];
+      return out;
+    }
+  }
+  const bag = jShuffle(pool), out=[[],[],[],[]]; let k=0;   // varianta relaxată
+  for(const p of [0,1,2,3]){ if(p===me){out[p]=[...state.hands[me]]; continue;} out[p]=bag.slice(k,k+need[p]); k+=need[p]; }
+  return out;
+}
+function jPlayout(hands, trick, turn, trump, won, bids, seen, dir){
+  const nx = (i)=> (i + (dir||1) + 4) % 4;
+  const h = hands.map(x=>[...x]);
+  let t = [...trick], cur = turn, w = [...won];
+  const sn = new Set(seen);
+  while (h.some(x=> x.length)){
+    while (t.length < 4){
+      const card = jHeuristic(h[cur], t, trump, {me:cur, bid:bids[cur], won:w[cur], seen:sn, count:true});
+      h[cur] = h[cur].filter(c=> c.id!==card.id);
+      t.push({p:cur, c:card}); sn.add(card.id);
+      cur = nx(cur);
+    }
+    const win = jWinner(t, trump);
+    w[win]++; t = []; cur = win;
+  }
+  return w;
+}
+function jSimulate(state, me, nsim){
+  const legal = jLegal(state.hands[me], state.trick, state.trump);
+  if (legal.length === 1) return legal[0];
+  let best = null, bestVal = -1e9;
+  for(const card of legal){
+    let sum = 0;
+    for(let s=0; s<nsim; s++){
+      const hands = jDeterminize(state, me);
+      hands[me] = hands[me].filter(c=> c.id!==card.id);
+      const trick = [...state.trick, {p:me, c:card}];
+      const seen = new Set(state.seen); seen.add(card.id);
+      const dir = state.dir || 1;
+      let cur = (me + dir + 4) % 4, won = [...state.won], t = trick;
+      if (t.length === 4){                       // levata se închide acum
+        const win = jWinner(t, state.trump); won[win]++; t = []; cur = win;
+      }
+      const res = jPlayout(hands, t, cur, state.trump, won, state.bids, seen, dir);
+      sum += jScore(state.bids[me], res[me]);
+    }
+    const val = sum / nsim;
+    if (val > bestVal){ bestVal = val; best = card; }
+  }
+  return best;
+}
+function jChoose(state, me){
+  const D = DIFF[state.players[me].diff];
+  const legal = jLegal(state.hands[me], state.trick, state.trump);
+  if (legal.length === 1) return legal[0];
+  if (state.players[me].diff === 'usor') return legal[(Math.random()*legal.length)|0];
+  if (D.sim && state.hands[me].length <= 7) return jSimulate(state, me, D.sim);
+  return jHeuristic(state.hands[me], state.trick, state.trump,
+    {me, bid:state.bids[me], won:state.won[me], seen:state.seen, count:D.count});
+}
+
+/* ============================================================
+   STARE ȘI FLUX
+   ============================================================ */
+let JG = null, jTimer = null, jSetup = null;
+
+function jDefaultSetup(){
+  return {
+    players: [
+      {name:'Eu',    avatar:'🧑', ai:false},
+      {name:'Diana', avatar:'🦊', ai:true, diff:'', style:''},
+      {name:'Vlad',  avatar:'🐻', ai:true, diff:'', style:''},
+      {name:'Raluca',avatar:'🦉', ai:true, diff:'', style:''}
+    ],
+    dealer:0, speed:2, masa:'verde', spate:'romb', sound:true, avOpen:-1
+  };
+}
+
+/* ---------- ecran de configurare ---------- */
+function renderJSetup(){
+  const box = document.getElementById('slots');
+  box.innerHTML = jSetup.players.map((p,i)=>{
+    const av = i===0 ? AV_OM : AV_AI;
+    const grid = jSetup.avOpen===i
+      ? `<div class="av-grid">${av.map(a=>`<button data-av="${i}|${a}" class="${a===p.avatar?'sel':''}">${a}</button>`).join('')}</div>` : '';
+    const pos = ['Sud (tu)','Vest','Nord','Est'][i];
+    const opts = p.ai ? `
+      <select class="opt-sel ${!p.diff?'ph':''}" data-diffsel="${i}">
+        <option value="" disabled hidden ${!p.diff?'selected':''}>Nivel</option>
+        ${Object.keys(DIFF).map(k=>`<option value="${k}" ${p.diff===k?'selected':''}>${DIFF[k].nume}</option>`).join('')}
+      </select>
+      <select class="opt-sel ${!p.style?'ph':''}" data-stylesel="${i}">
+        <option value="" disabled hidden ${!p.style?'selected':''}>Tipologie</option>
+        ${Object.keys(STYLE).map(k=>`<option value="${k}" ${p.style===k?'selected':''}>${STYLE[k].nume}</option>`).join('')}
+      </select>`
+      : `<span class="opt-empty"></span><span class="opt-empty"></span>`;
+    return `<div class="slot ${jSetup.err && p.ai && (!p.diff||!p.style) ? 'slot-err':''}">
+      <button class="av-btn" data-avopen="${i}" title="${pos}">${p.avatar}</button>
+      <input type="text" maxlength="12" data-nm="${i}" value="${escapeHtml(p.name)}" placeholder="${pos}">
+      ${opts}
+      ${grid}</div>`;
+  }).join('');
+
+  const sel = document.getElementById('j-dealer');
+  sel.innerHTML = jSetup.players.map((p,i)=>
+    `<option value="${i}" ${jSetup.dealer===i?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+  document.getElementById('masa-row').innerHTML = MASE.map(([k,col])=>
+    `<button class="sw ${jSetup.masa===k?'sel':''}" data-masa="${k}" style="background:${col}"></button>`).join('');
+  document.getElementById('spate-row').innerHTML = SPATE.map(([k,bg])=>
+    `<button class="sw ${jSetup.spate===k?'sel':''}" data-spate="${k}" style="background:${bg}"></button>`).join('');
+  document.getElementById('snd-row').innerHTML =
+    [['1','🔊 Pornit'],['0','🔇 Oprit']].map(([v,t])=>
+      `<button data-snd="${v}" class="${(jSetup.sound!==false)===(v==='1')?'sel':''}">${t}</button>`).join('');
+  document.getElementById('j-speed').value = jSetup.speed;
+  applyTheme(jSetup.masa, jSetup.spate);
+}
+function applyTheme(masa, spate){
+  document.body.dataset.masa = masa;
+  document.body.dataset.spate = spate;
+}
+
+/* ---------- pornire / rundă nouă ---------- */
+function jNext(i){ return (i + JG.dir + 4) % 4; }     // următorul jucător în sensul ales
+function jStartGame(){
+  JG = {
+    players: jSetup.players.map(p=>({...p})),
+    speed: jSetup.speed, masa: jSetup.masa, spate: jSetup.spate, sound: jSetup.sound !== false,
+    dir: jSetup.dir || 1,
+    firstDealer: jSetup.dealer, ri: -1, scores: [[],[],[],[]], log: []
+  };
+  applyTheme(JG.masa, JG.spate);
+  jNextRound();
+}
+function jNextRound(){
+  JG.ri++;
+  if (JG.ri >= JSEQ.length){ jGameOver(); return; }
+  const d = jDeal(JG.ri);
+  JG.dealer = ((JG.firstDealer + JG.ri * JG.dir) % 4 + 4) % 4;   // dealerul se rotește în sensul de joc
+  JG.n = d.n; JG.hands = d.hands; JG.trump = d.trump; JG.trumpCard = d.trumpCard;
+  JG.bids = [null,null,null,null];
+  JG.won = [0,0,0,0];
+  JG.trick = []; JG.seen = new Set(); JG.voids = [{},{},{},{}];
+  JG.phase = 'bid';
+  JG.cur = jNext(JG.dealer);                            // primul licitează cel de după dealer
+  JG.lastTrick = null;
+  sfx('round', JG.n*4);
+  jSave(); jRender(); jTick();
+}
+
+/* ---------- bucla ---------- */
+function jTick(){
+  clearTimeout(jTimer);
+  const p = JG.players[JG.cur];
+  if (JG.phase === 'bid'){
+    if (!p.ai){ jBidSheet(); return; }
+    jTimer = setTimeout(()=>{
+      const bids = JG.bids.filter(b=> b!==null);
+      const b = jBid(JG.hands[JG.cur], JG.trump, JG.n, p.diff, p.style, JG.cur===JG.dealer, bids, JG.trumpCard ? JG.trumpCard.r : null);
+      jDoBid(b);
+    }, SPEEDS[JG.speed]);
+    return;
+  }
+  if (JG.phase === 'play'){
+    if (!p.ai){ jRender(); return; }
+    jTimer = setTimeout(()=>{
+      const card = jChoose({
+        players:JG.players, hands:JG.hands, trick:JG.trick, trump:JG.trump,
+        bids:JG.bids, won:JG.won, seen:JG.seen, voids:JG.voids, trumpCard:JG.trumpCard, dir:JG.dir
+      }, JG.cur);
+      jDoPlay(card);
+    }, SPEEDS[JG.speed]);
+  }
+}
+function jDoBid(b){
+  JG.bids[JG.cur] = b;
+  if (JG.cur === JG.dealer){
+    JG.phase = 'play';
+    JG.cur = jNext(JG.dealer);
+  } else {
+    JG.cur = jNext(JG.cur);
+  }
+  jRender(); jTick();
+}
+function jDoPlay(card){
+  const me = JG.cur;
+  if (JG.trick.length){                                   // memorez ce nu are jucătorul
+    const lead = JG.trick[0].c.s;
+    if (card.s !== lead){
+      JG.voids[me][lead] = true;
+      if (card.s !== JG.trump) JG.voids[me][JG.trump] = true;  // n-a tăiat → n-are atu
+    }
+  }
+  JG.hands[me] = JG.hands[me].filter(c=> c.id !== card.id);
+  JG.trick.push({p:me, c:card});
+  JG.seen.add(card.id);
+  sfx('card');
+  if (JG.trick.length === 4){
+    const w = jWinner(JG.trick, JG.trump);
+    JG.won[w]++; JG.lastTrick = w; JG.phase = 'trickdone';
+    jSave(); jRender();
+    setTimeout(()=> sfx('sweep'), 260);
+    jTimer = setTimeout(()=>{
+      JG.trick = []; JG.cur = w;
+      if (!JG.hands[0].length){ jRoundEnd(); return; }
+      JG.phase = 'play'; jRender(); jTick();
+    }, Math.max(900, SPEEDS[JG.speed]));
+    return;
+  }
+  JG.cur = jNext(me);
+  jRender(); jTick();
+}
+function jRoundEnd(){
+  JG.phase = 'roundend';
+  const sc = [0,1,2,3].map(i=> jScore(JG.bids[i], JG.won[i]));
+  sc.forEach((s,i)=> JG.scores[i].push(s));
+  JG.log.push({ri:JG.ri, n:JG.n, bids:[...JG.bids], won:[...JG.won], sc});
+  jSave(); jRender();
+}
+function jGameOver(){
+  JG.phase = 'over';
+  jSave(); showJ('jover');
+  const tot = [0,1,2,3].map(i=> JG.scores[i].reduce((a,b)=>a+b,0));
+  const ord = [0,1,2,3].sort((a,b)=> tot[b]-tot[a]);
+  const w = ord[0];
+  document.getElementById('j-winner').hidden = false;
+  document.getElementById('j-winner').innerHTML =
+    `<div class="trophy">🏆</div><h2>${escapeHtml(JG.players[w].name)}</h2>
+     <p class="muted">${tot[w]} puncte${w===0?' — ai câștigat!':''}</p>`;
+  document.getElementById('j-final').innerHTML = ord.map((i,k)=>{
+    const p = JG.players[i], ex = JG.log.filter(l=> l.bids[i]===l.won[i]).length;
+    const tag = p.ai ? `${DIFF[p.diff].nume} · ${STYLE[p.style].nume}` : 'tu';
+    return `<div class="stand ${k===0?'first':''}">
+      <span class="pos-n">${k+1}</span>
+      <span class="nm">${p.avatar} ${escapeHtml(p.name)}<br>
+        <span class="muted" style="font-size:12px;font-weight:400;">${tag} · ${ex}/${JG.log.length} mâini exacte</span></span>
+      <span class="sc ${tot[i]<0?'neg':''}">${tot[i]}</span></div>`;
+  }).join('');
+}
+
+/* ---------- meniu în timpul jocului ---------- */
+function jCloseMenu(){ const m=document.getElementById('j-menu'); if(m) m.remove(); }
+function jStatsRows(){
+  // pentru fiecare jucător: puncte totale, licitate exact vs greșit, medie licitație
+  return [0,1,2,3].map(i=>{
+    const p = JG.players[i];
+    const rounds = JG.log;
+    const tot = JG.scores[i].reduce((a,b)=>a+b,0);
+    const jucate = rounds.length;
+    const exact = rounds.filter(l=> l.bids[i]===l.won[i]).length;
+    const gresit = jucate - exact;
+    const bidsNz = rounds.filter(l=> l.bids[i]>0);
+    const medBid = bidsNz.length ? (bidsNz.reduce((a,l)=>a+l.bids[i],0)/bidsNz.length) : 0;
+    const supra = rounds.filter(l=> l.won[i] > l.bids[i]).length;   // a făcut mai mult
+    const sub   = rounds.filter(l=> l.won[i] < l.bids[i]).length;   // a făcut mai puțin
+    const tag = p.ai
+      ? `${(DIFF[p.diff]&&DIFF[p.diff].nume[0])||'?'}·${(STYLE[p.style]&&STYLE[p.style].nume)||'?'}`
+      : 'tu';
+    return {i, name:p.name, avatar:p.avatar, ai:p.ai, tag,
+            tot, jucate, exact, gresit, supra, sub, medBid};
+  }).sort((a,b)=> b.tot - a.tot);
+}
+function jOpenMenu(){
+  jCloseMenu();
+  const SPD = ['🐢','🚶','🚴','🏃','⚡'];
+  const stats = jStatsRows();
+  const statTable = JG.log.length === 0
+    ? `<p class="muted" style="text-align:center;padding:10px 0;">Statisticile apar după prima rundă terminată.</p>`
+    : `<table class="rt stat"><thead><tr>
+         <th class="nm">Jucător</th><th>Pct</th><th>Exact</th><th>Peste</th><th>Sub</th><th>Med.</th></tr></thead>
+       <tbody>${stats.map((s,k)=>`<tr>
+         <td class="nm">${s.avatar} ${escapeHtml(s.name)}<br><span class="muted" style="font-size:11px;font-weight:400;">${escapeHtml(s.tag)}</span></td>
+         <td><b>${s.tot}</b></td>
+         <td class="pos">${s.exact}</td>
+         <td>${s.supra}</td>
+         <td class="neg">${s.sub}</td>
+         <td>${s.medBid.toFixed(2)}</td></tr>`).join('')}</tbody></table>`;
+
+  const d = document.createElement('div');
+  d.className = 'overlay'; d.id = 'j-menu';
+  d.innerHTML = `<div class="panel menu-panel">
+    <div class="menu-head"><h2>Meniu</h2><button class="x" id="menu-x">✕</button></div>
+
+    <div class="menu-row2">
+      <div class="mr-speed">
+        <label class="opt-lbl">Viteza <span id="menu-spd-ic">${SPD[JG.speed]}</span></label>
+        <div class="speed-row"><span>🐢</span><input type="range" id="menu-speed" min="0" max="4" step="1" value="${JG.speed}"><span>⚡</span></div>
+      </div>
+      <div class="mr-snd">
+        <label class="opt-lbl">Sunet</label>
+        <button class="snd-toggle ${JG.sound?'on':''}" id="menu-snd">${JG.sound?'🔊 Pornit':'🔇 Oprit'}</button>
+      </div>
+    </div>
+
+    <label class="opt-lbl">Culoarea mesei</label>
+    <div class="theme-row" id="menu-masa">${MASE.map(([k,col])=>
+      `<button class="sw ${JG.masa===k?'sel':''}" data-masa="${k}" style="background:${col}"></button>`).join('')}</div>
+
+    <label class="opt-lbl" style="margin-top:12px;">Statistici</label>
+    ${statTable}
+
+    <div class="menu-foot">
+      <button class="btn menu-cont" id="menu-cont">Continuă</button>
+      <button class="btn menu-quit-btn" id="menu-quit">Părăsește jocul</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+
+  d.addEventListener('click', e=>{ if(e.target===d) jCloseMenu(); });   // click în afară închide
+  document.getElementById('menu-x').onclick = jCloseMenu;
+  document.getElementById('menu-speed').oninput = e=>{
+    JG.speed = +e.target.value;
+    const ic = document.getElementById('menu-spd-ic'); if(ic) ic.textContent = SPD[JG.speed];
+    if (jSetup){ jSetup.speed = JG.speed; store.set('wist-ai-setup', jSetup); }
+  };
+  document.getElementById('menu-snd').onclick = e=>{
+    JG.sound = !JG.sound;
+    if (jSetup){ jSetup.sound = JG.sound; store.set('wist-ai-setup', jSetup); }
+    const b = e.currentTarget;
+    b.classList.toggle('on', JG.sound);
+    b.textContent = JG.sound ? '🔊 Pornit' : '🔇 Oprit';
+    jRender();
+  };
+  document.getElementById('menu-masa').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    JG.masa = b.dataset.masa; applyTheme(JG.masa, JG.spate);
+    if (jSetup){ jSetup.masa = JG.masa; store.set('wist-ai-setup', jSetup); }
+    d.querySelectorAll('#menu-masa .sw').forEach(x=> x.classList.toggle('sel', x.dataset.masa===JG.masa));
+  });
+  document.getElementById('menu-cont').onclick = jCloseMenu;
+  document.getElementById('menu-quit').onclick = ()=>{
+    const dlg = document.createElement('div');
+    dlg.className = 'confirm-overlay';
+    dlg.innerHTML = `<div class="confirm-box">
+      <div class="qc-msg">Sigur vrei să părăsești jocul?</div>
+      <div class="qc-btns">
+        <button class="btn menu-cont" id="qc-no">Nu, continuă</button>
+        <button class="btn menu-quit-btn" id="qc-yes">Da, părăsește</button>
+      </div></div>`;
+    d.appendChild(dlg);
+    const close = ()=> dlg.remove();
+    dlg.addEventListener('click', e=>{ if(e.target===dlg) close(); });
+    dlg.querySelector('#qc-no').onclick = close;
+    dlg.querySelector('#qc-yes').onclick = ()=>{ jCloseMenu(); goHome(); };
+  };
+}
+
+/* ---------- randare masă ---------- */
+function cardHTML(c, cls, sz){
+  if (!c) return '';
+  const w = sz, h = Math.round(sz*1.45);
+  return `<div class="k ${JRED.has(c.s)?'red':''} ${cls||''}" style="width:${w}px;height:${h}px;font-size:${Math.round(sz*0.30)}px">
+    <span class="rk">${c.r}</span><span class="sy">${JSYM[c.s]}</span><span class="rk2">${c.r}</span></div>`;
+}
+function backHTML(sz){
+  const w = sz, h = Math.round(sz*1.45);
+  return `<div class="k back" style="width:${w}px;height:${h}px"></div>`;
+}
+function jRender(){
+  if (!JG) return;
+  const tot = [0,1,2,3].map(i=> JG.scores[i].reduce((a,b)=>a+b,0));
+
+  /* adversari */
+  document.getElementById('op-strip').innerHTML = [1,2,3].map(i=>{
+    const p = JG.players[i], b = JG.bids[i];
+    const trCls = b===null ? '' : (JG.won[i]===b ? 'ok' : (JG.won[i]>b ? 'over' : ''));
+    const posCls = i===2 ? 'pos-n' : (i===1 ? 'pos-w' : 'pos-e');
+    return `<div class="op ${i!==2 ? 'side':''} ${posCls} ${JG.cur===i && JG.phase!=='roundend' ? 'turn':''} ${
+      JG.phase==='trickdone' && JG.lastTrick===i ? 'flash':''}">
+      <div class="av">${p.avatar}${i===JG.dealer?'<span class="dl">împarte</span>':''}</div>
+      <div class="nm">${escapeHtml(p.name)}</div>
+      <div class="bt">
+        <span class="pill bid ${b===null?'none':''}">${b===null?'–':b}</span>
+        <span class="pill tr ${trCls}">${JG.won[i]}</span>
+      </div>
+      <div class="left">${JG.hands[i].length} ${JG.hands[i].length===1?'carte':'cărți'} · ${tot[i]} p</div></div>`;
+  }).join('');
+
+  /* controale + info sub titlul WIST */
+  const SPD = ['🐢','🚶','🚴','🏃','⚡'];
+  document.getElementById('hdr-info').innerHTML =
+    `<span class="rnd">Runda ${JG.ri+1}/${JSEQ.length}</span>
+     <span class="dot">·</span><span>${JG.n} ${JG.n===1?'carte':'cărți'}</span>
+     <button class="mini" id="btn-spd" title="viteza adversarilor">${SPD[JG.speed]}</button>
+     <button class="mini" id="btn-snd" title="sunet">${JG.sound?'🔊':'🔇'}</button>`;
+
+  /* masa — grup compact în centru */
+  const pos = ['s','w','n','e'];
+  const flydir = JG.phase==='trickdone' ? pos[JG.lastTrick] : null;
+  let cluster = '';
+  for (let i=0;i<4;i++){
+    const t = JG.trick.find(x=> x.p===i);
+    const anim = flydir ? ` fly-${flydir}` : '';
+    cluster += `<div class="slot-${pos[i]}">${t ? cardHTML(t.c, (t.c.s===JG.trump?'atu':'') + anim, 46) : ''}</div>`;
+  }
+  /* atu în colțul diagonal dintre cel care a împărțit și următorul care împarte */
+  const nextDealer = jNext(JG.dealer);
+  const pair = [JG.dealer, nextDealer];
+  const corner = (pair.includes(2) ? 't' : 'b') + (pair.includes(1) ? 'l' : 'r');   // tl/tr/bl/br
+  const atuTable = JG.trumpCard
+    ? `<div class="atu-corner atu-${corner}">${cardHTML(JG.trumpCard,'atu',44)}<span class="lb">ATU</span></div>`
+    : `<div class="atu-corner atu-${corner} fara"><b>FĂRĂ<br>ATU</b></div>`;
+  const took = JG.phase === 'trickdone'
+    ? `<div class="took-center"><span class="took">${JG.players[JG.lastTrick].avatar}
+         <b>${JG.lastTrick===0 ? 'Ai luat mâna' : escapeHtml(JG.players[JG.lastTrick].name)+' ia mâna'}</b></span></div>`
+    : '';
+  let msg = '';
+  if (JG.phase === 'bid'){
+    msg = `<b>${escapeHtml(JG.players[JG.dealer].name)}</b> a împărțit<br>` +
+          (JG.cur === 0 ? 'Licitezi <b>tu</b>' : `Licitează <b>${escapeHtml(JG.players[JG.cur].name)}</b>`);
+  } else if (JG.phase === 'trickdone'){
+    msg = '';
+  } else if (JG.phase === 'play' && JG.players[JG.cur].ai){
+    msg = `<b>${escapeHtml(JG.players[JG.cur].name)}</b> se gândește…`;
+  } else if (JG.phase === 'play'){
+    msg = `Este rândul tău`;
+  }
+
+  const feltEl = document.getElementById('felt');
+  feltEl.className = 'felt' + (JG.phase === 'bid' ? ' bidding' : '');
+  feltEl.innerHTML = `${atuTable}<div class="tricks">${cluster}${took}</div><div class="msg">${msg}</div>`;
+
+  /* panoul meu de scor, lângă cărți (mereu vizibil) */
+  const meP = JG.players[0], mb = JG.bids[0];
+  const meCls = mb===null ? '' : (JG.won[0]===mb ? 'ok' : (JG.won[0]>mb ? 'over' : ''));
+  document.getElementById('me-side').innerHTML =
+    `<div class="op me-box ${JG.cur===0 && JG.phase!=='roundend' ? 'turn':''} ${
+       JG.phase==='trickdone' && JG.lastTrick===0 ? 'flash':''}">
+       <div class="av">${meP.avatar}${JG.dealer===0?'<span class="dl">împarte</span>':''}</div>
+       <div class="nm">${escapeHtml(meP.name)}</div>
+       <div class="bt">
+         <span class="pill bid ${mb===null?'none':''}">${mb===null?'–':mb}</span>
+         <span class="pill tr ${meCls}">${JG.won[0]}</span>
+       </div>
+       <div class="left">${tot[0]} p</div></div>`;
+
+  /* mâna mea */
+  const hand = JG.hands[0], sz = hand.length>=7 ? 48 : (hand.length>=5 ? 54 : 60);
+  const legal = (JG.phase==='play' && JG.cur===0) ? jLegal(hand, JG.trick, JG.trump) : [];
+  document.getElementById('hand').className = 'hand' + (hand.length>5 ? ' fan' : '');
+  document.getElementById('hand').innerHTML = hand.map(c=>{
+    const ok = legal.some(l=> l.id===c.id);
+    const cls = (c.s===JG.trump ? 'atu ' : '') + (JG.cur===0 && JG.phase==='play' && !ok ? 'dead' : '');
+    return cardHTML(c, cls, sz).replace('<div class="k', `<div data-card="${c.id}" class="k`);
+  }).join('');
+
+  jOverlayRoundEnd();
+}
+function jOverlayRoundEnd(){
+  const old = document.getElementById('j-ovl'); if (old) old.remove();
+  if (JG.phase !== 'roundend') return;
+  const tot = [0,1,2,3].map(i=> JG.scores[i].reduce((a,b)=>a+b,0));
+  const rows = [0,1,2,3].map(i=>{
+    const s = JG.scores[i][JG.scores[i].length-1];
+    return `<tr><td class="nm">${JG.players[i].avatar} ${escapeHtml(JG.players[i].name)}</td>
+      <td>${JG.bids[i]}</td><td>${JG.won[i]}</td>
+      <td class="${s<0?'neg':'pos'}">${s>0?'+':''}${s}</td><td><b>${tot[i]}</b></td></tr>`;
+  }).join('');
+  const d = document.createElement('div');
+  d.className = 'overlay'; d.id = 'j-ovl';
+  d.innerHTML = `<div class="panel">
+    <h2>Runda ${JG.ri+1} — ${JG.n} ${JG.n===1?'carte':'cărți'}</h2>
+    <table class="rt"><thead><tr><th class="nm">Jucător</th><th>Lic.</th><th>Făc.</th><th>Scor</th><th>Total</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <button class="btn" id="btn-jnext" style="margin-top:12px;">
+      ${JG.ri+1 >= JSEQ.length ? 'Vezi rezultatul final' : 'Runda următoare'}</button></div>`;
+  document.body.appendChild(d);
+  document.getElementById('btn-jnext').onclick = ()=> jNextRound();
+}
+function jCloseSheet(){
+  const s = document.getElementById('j-sheet'); if (s) s.remove();
+  document.body.classList.remove('sheet-open');
+  document.documentElement.style.setProperty('--sheet-h','0px');
+}
+function jBidSheet(){
+  jCloseSheet();
+  const sum = JG.bids.reduce((a,b)=> a + (b||0), 0);
+  const forb = (JG.cur === JG.dealer) ? (JG.n - sum) : -1;
+  const d = document.createElement('div');
+  d.className = 'sheet'; d.id = 'j-sheet';
+  d.innerHTML = `<h3>${escapeHtml(JG.players[0].name)}, câte zici?</h3>
+    <div class="sub">${JG.n} ${JG.n===1?'carte':'cărți'} · ai <b>${
+      JG.scores[0].reduce((a,b)=>a+b,0)}</b> p${forb>=0 ? ` · nu poți zice <b>${forb}</b>` : ''}</div>
+    <div class="chips">${Array.from({length:JG.n+1},(_,k)=>
+      `<button class="chip" data-bid="${k}" ${k===forb?'disabled':''}>${k}</button>`).join('')}</div>`;
+  document.body.appendChild(d);
+  const inline = window.matchMedia('(min-width:820px)').matches;
+  if (inline){
+    d.classList.add('bid-inline');
+    document.getElementById('bid-slot').appendChild(d);
+  } else {
+    document.body.classList.add('sheet-open');
+    document.documentElement.style.setProperty('--sheet-h', d.offsetHeight + 'px');
+  }
+  d.querySelectorAll('[data-bid]').forEach(b=> b.onclick = ()=>{
+    jCloseSheet(); jDoBid(+b.dataset.bid);
+  });
+  jRender();
+}
+
+/* ---------- persistență ---------- */
+async function jSave(){
+  if (!JG) return;
+  await store.set('wist-ai-current', {...JG, seen:[...JG.seen]});
+}
+async function jLoad(){
+  const s = await store.get('wist-ai-current');
+  if (!s || !s.players) return null;
+  s.seen = new Set(s.seen || []);
+  return s;
+}
+
+/* ============================================================
+   SUNET — sintetizat în browser, fără fișiere externe
+   ============================================================ */
+let AC = null;
+function jAC(){
+  if (AC === null){
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ AC = false; }
+  }
+  return AC || null;
+}
+function jBurst(ctx, t, dur, f0, f1, gain){
+  const n = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1 - i/n);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.1;
+  bp.frequency.setValueAtTime(f0, t);
+  bp.frequency.exponentialRampToValueAtTime(Math.max(60,f1), t+dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + dur*0.18);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+  src.start(t); src.stop(t + dur + 0.02);
+}
+function sfx(kind, k){
+  if (!JG || !JG.sound) return;
+  const ctx = jAC(); if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const t = ctx.currentTime;
+  if (kind === 'round'){                       // amestecat, apoi împărțit
+    for (let i=0;i<8;i++) jBurst(ctx, t + i*0.07, 0.075, 2800, 850, 0.10);
+    const n = Math.min(k||4, 32);
+    for (let i=0;i<n;i++) jBurst(ctx, t + 0.68 + i*0.07, 0.035, 4200, 1500, 0.14);
+  }
+  else if (kind === 'card')  jBurst(ctx, t, 0.045, 3600, 1300, 0.12);
+  else if (kind === 'sweep') jBurst(ctx, t, 0.32, 1500, 260, 0.15);
+}
+
+/* ---------- utilitare ---------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function save(){ await store.set('wist-current', G); }
+
+/* ---------- pornire ---------- */
+
+/* ============================================================
+   ROUTER GENERAL — acasă / tabelă de scor / joc contra calculatorului
+   ============================================================ */
+function showJ(id){
+  $$('.screen').forEach(s=> s.classList.remove('on'));
+  const el = document.getElementById('scr-'+id);
+  if (el) el.classList.add('on');
+  $('#nav').hidden = true;
+  $('#track').hidden = true;
+  $('#btn-home').hidden = (id === 'home');
+  document.body.classList.toggle('playing', id === 'play');
+  const sheet = document.getElementById('j-sheet'); if (sheet && id!=='play') jCloseSheet();
+  const ovl = document.getElementById('j-ovl');     if (ovl && id!=='play') ovl.remove();
+  $('#hdr-sub').textContent = '';
+  if (id === 'jsetup'){
+    renderJSetup();
+    const err = document.getElementById('setup-err'); if (err) err.hidden = true;
+  }
+  window.scrollTo(0,0);
+}
+async function goHome(){
+  clearTimeout(jTimer);
+  document.body.classList.remove('playing');
+  applyTheme((jSetup&&jSetup.masa)||'verde', (jSetup&&jSetup.spate)||'romb');
+  showJ('home');
+  $('#badge-scor').hidden = !(G && !isFinished());
+  const s = await jLoad();
+  $('#badge-joc').hidden = !(s && s.ri < JSEQ.length && s.phase !== 'over');
+}
+
+/* ---------- acasă ---------- */
+$('#go-scor').onclick = ()=>{ show('setup'); $('#btn-home').hidden = false; };
+$('#go-joc').onclick  = async ()=>{
+  if (!jSetup) jSetup = jDefaultSetup();
+  const s = await jLoad();
+  $('#btn-jresume').hidden = !(s && s.ri < JSEQ.length && s.phase !== 'over');
+  showJ('jsetup');
+};
+$('#btn-home').onclick = ()=>{
+  if (JG && document.getElementById('scr-play').classList.contains('on')) jOpenMenu();
+  else goHome();
+};
+
+/* ---------- configurare joc ---------- */
+$('#slots').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if (b.dataset.avopen !== undefined){
+    const i = +b.dataset.avopen;
+    jSetup.avOpen = (jSetup.avOpen === i) ? -1 : i;
+  } else if (b.dataset.av){
+    const [i,a] = b.dataset.av.split('|');
+    jSetup.players[+i].avatar = a; jSetup.avOpen = -1;
+  } else return;
+  renderJSetup();
+});
+$('#slots').addEventListener('change', e=>{
+  const s = e.target;
+  if (s.dataset.diffsel !== undefined){
+    jSetup.players[+s.dataset.diffsel].diff = s.value;
+  } else if (s.dataset.stylesel !== undefined){
+    jSetup.players[+s.dataset.stylesel].style = s.value;
+  } else return;
+  const done = jSetup.players.every(p=> !p.ai || (p.diff && p.style));
+  if (done) jSetup.err = false;
+  renderJSetup();
+});
+$('#slots').addEventListener('input', e=>{
+  const i = e.target.dataset.nm;
+  if (i === undefined) return;
+  jSetup.players[+i].name = e.target.value || ['Eu','Vest','Nord','Est'][+i];
+  const sel = $('#j-dealer'), keep = sel.value;
+  sel.innerHTML = jSetup.players.map((p,k)=>
+    `<option value="${k}">${escapeHtml(p.name)}</option>`).join('');
+  sel.value = keep;
+});
+$('#j-dealer').onchange = e=> jSetup.dealer = +e.target.value;
+$('#masa-row').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  jSetup.masa = b.dataset.masa; renderJSetup();
+});
+$('#spate-row').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  jSetup.spate = b.dataset.spate; renderJSetup();
+});
+$('#snd-row').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  jSetup.sound = (b.dataset.snd === '1'); renderJSetup();
+});
+$('#j-speed').oninput = e=>{
+  jSetup.speed = +e.target.value;
+  if (JG) JG.speed = jSetup.speed;
+};
+function jTryStart(dir){
+  const lipsa = jSetup.players.filter(p=> p.ai && (!p.diff || !p.style));
+  if (lipsa.length){
+    jSetup.err = true; renderJSetup();
+    const err = $('#setup-err');
+    const nume = lipsa.map(p=> escapeHtml(p.name)).join(', ');
+    err.textContent = 'Alege nivelul și tipologia pentru: ' + nume;
+    err.hidden = false;
+    err.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  jSetup.err = false;
+  jSetup.dir = dir;
+  store.set('wist-ai-setup', jSetup);
+  showJ('play'); jStartGame();
+}
+$('#btn-start-cw').onclick  = ()=> jTryStart(1);
+$('#btn-start-ccw').onclick = ()=> jTryStart(-1);
+$('#btn-jresume').onclick = async ()=>{
+  const s = await jLoad(); if(!s) return;
+  JG = s; applyTheme(JG.masa, JG.spate);
+  showJ('play');
+  if (JG.phase === 'trickdone'){
+    JG.trick = []; JG.cur = JG.lastTrick;
+    if (!JG.hands[0].length){ jRoundEnd(); return; }
+    JG.phase = 'play';
+  }
+  jRender();
+  if (JG.phase !== 'roundend') jTick();
+};
+
+/* ---------- viteză și sunet în timpul jocului ---------- */
+$('#hdr-info').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b || !JG) return;
+  if (b.id === 'btn-spd'){
+    JG.speed = (JG.speed + 1) % SPEEDS.length;
+    if (jSetup) { jSetup.speed = JG.speed; store.set('wist-ai-setup', jSetup); }
+  } else if (b.id === 'btn-snd'){
+    JG.sound = !JG.sound;
+    if (jSetup) { jSetup.sound = JG.sound; store.set('wist-ai-setup', jSetup); }
+  } else return;
+  jRender();
+});
+
+/* ---------- mâna mea ---------- */
+$('#hand').addEventListener('click', e=>{
+  const el = e.target.closest('[data-card]'); if(!el || !JG) return;
+  if (JG.phase !== 'play' || JG.cur !== 0) return;
+  const card = JG.hands[0].find(c=> c.id === el.dataset.card);
+  if (!card) return;
+  if (!jLegal(JG.hands[0], JG.trick, JG.trump).some(c=> c.id === card.id)) return;
+  jDoPlay(card);
+});
+
+/* ---------- final ---------- */
+$('#btn-jagain').onclick = ()=> showJ('jsetup');
+$('#btn-jhome').onclick  = goHome;
+
+(async function init(){
+  history = (await store.get('wist-history')) || [];
+  const saved = await store.get('wist-current');
+  if(saved && saved.players){ G = saved; }
+  renderSetup(); renderResume(); renderHistory();
+  jSetup = (await store.get('wist-ai-setup')) || jDefaultSetup();
+  jSetup.avOpen = -1;
+  await goHome();
+})();
+</script>
+</body>
+</html>
