@@ -5,7 +5,7 @@
 const CACHE = 'wist-v1';
 const ASSETS = [
   './',
-  './wist_tel.html'
+  './index.html'
 ];
 
 self.addEventListener('install', e=>{
